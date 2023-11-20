@@ -37,6 +37,8 @@ services:
     privileged: true
     env_file:
       - ./sacct_env
+    ports:
+      - "80:80"
     depends_on:
       - acct-db
 
@@ -50,6 +52,8 @@ services:
     privileged: true
     env_file:
       - ./sacct_env 
+    ports:
+      - "81:80"
     depends_on:
       - acct-db
 
@@ -57,7 +61,10 @@ services:
     image: slurm-lab:latest
     deploy:
       mode: replicated
-      replicas: 2
+      replicas: 4
+      resources:
+        limits:
+          cpus: '2'
     privileged: true
     networks:
       - default
