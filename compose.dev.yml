@@ -1,0 +1,70 @@
+x-master-volumes: &master-volumes
+  - spool-slurmctld:/var/spool/slurmctld
+  - homedir:/home
+  - /run/podman/podman.sock:/run/podman/podman.sock
+
+x-common-volumes: &common-volumes
+  - homedir:/home
+
+x-database-volumes: &database-volumes
+  - slurm_acct_db:/var/lib/mysql
+
+volumes:
+  spool-slurmctld:
+    external: false
+  homedir:
+    external: false
+  slurm_acct_db:
+    external: false
+
+services:
+
+  acct-db:
+    image: mariadb:latest
+    container_name: slurm-lab-db-1
+    hostname: slurm-lab-db-1
+    volumes: *database-volumes
+    env_file:
+      - ./sacct_env
+  
+  master-1:
+    image: slurm-lab:latest
+    container_name: slurm-lab-master-1
+    hostname: slurm-lab-master-1
+    networks:
+      - default
+    volumes: *master-volumes
+    privileged: true
+    env_file:
+      - ./sacct_env
+    depends_on:
+      - acct-db
+
+  master-2:
+    image: slurm-lab:latest
+    container_name: slurm-lab-master-2
+    hostname: slurm-lab-master-2
+    networks:
+      - default
+    volumes: *master-volumes
+    privileged: true
+    env_file:
+      - ./sacct_env 
+    depends_on:
+      - acct-db
+
+  compute:
+    image: slurm-lab:latest
+    deploy:
+      mode: replicated
+      replicas: 2
+    privileged: true
+    networks:
+      - default
+    volumes: *common-volumes
+    depends_on:
+      - master-1
+      - master-2
+    
+networks:
+  default: {}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Generate slurmdbd.conf
+Before=slurmdbd.service slurmctld.service slurmd.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/slurm/slurm-init.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

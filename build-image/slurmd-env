@@ -1,0 +1,2 @@
+# register compute node dynamically
+SLURMD_OPTIONS="-Z"
