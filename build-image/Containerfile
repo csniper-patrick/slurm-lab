@@ -1,5 +1,6 @@
 FROM rockylinux/rockylinux:8 as build
-COPY build-slurm-rpm.sh .
+COPY build-slurm-rpm.sh ./
+COPY slurm ./slurm-src
 RUN ./build-slurm-rpm.sh
 
 FROM rockylinux/rockylinux:8
