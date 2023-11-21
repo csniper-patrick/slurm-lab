@@ -23,6 +23,7 @@ COPY slurmd-extra.conf service-restart.conf /etc/systemd/system/slurmd.service.d
 COPY slurmd-env /etc/sysconfig/slurmd
 
 COPY slurm-init.service /etc/systemd/system/
+COPY lyoko.sudo /etc/sudoers.d/lyoko
 
 # jupyterlab services
 # COPY jupyter-lab.service /etc/systemd/system/

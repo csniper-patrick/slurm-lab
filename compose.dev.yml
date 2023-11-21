@@ -39,6 +39,12 @@ services:
       - ./sacct_env
     depends_on:
       - acct-db
+    healthcheck:
+      test: "systemctl is-active slurmctld"
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
   master-2:
     image: slurm-lab:latest
@@ -52,6 +58,12 @@ services:
       - ./sacct_env
     depends_on:
       - acct-db
+    healthcheck:
+      test: "systemctl is-active slurmctld"
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
   compute:
     image: slurm-lab:latest
@@ -66,8 +78,10 @@ services:
       - default
     volumes: *common-volumes
     depends_on:
-      - master-1
-      - master-2
+      master-1:
+        condition: service_healthy
+      master-2:
+        condition: service_healthy
   
   jupyterhub:
     image: slurm-lab:latest

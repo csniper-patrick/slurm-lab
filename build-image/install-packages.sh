@@ -20,14 +20,14 @@ python3 -m venv /opt/jupyterhub/
 yum -y module install nodejs:18
 npm install -g configurable-http-proxy
 mkdir -p /opt/jupyterhub/etc/jupyterhub/
-
 yum clean all
 
 # Create users
 useradd -r -b /var/lib slurm
-useradd jeremie
-useradd aelita
-useradd yumi
-useradd william
-useradd ulrich
-useradd odd
+groupadd lyoko
+useradd -g lyoko jeremie
+useradd -g lyoko aelita
+useradd -g lyoko yumi
+useradd -g lyoko william
+useradd -g lyoko ulrich
+useradd -g lyoko odd
