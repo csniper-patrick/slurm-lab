@@ -25,13 +25,16 @@ COPY slurmd-env /etc/sysconfig/slurmd
 COPY slurm-init.service /etc/systemd/system/
 
 # jupyterlab services
-COPY jupyter-lab.service /etc/systemd/system/
-COPY service-restart.conf /etc/systemd/system/jupyter-lab.service.d/
+# COPY jupyter-lab.service /etc/systemd/system/
+# COPY service-restart.conf /etc/systemd/system/jupyter-lab.service.d/
+COPY jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
+COPY jupyter-hub.service /etc/systemd/system/
+COPY service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
 
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurm-init}.service /etc/systemd/system/jupyter-lab.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurm-init}.service /etc/systemd/system/jupyter-hub.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service
 
 ENTRYPOINT [ "/sbin/init" ]

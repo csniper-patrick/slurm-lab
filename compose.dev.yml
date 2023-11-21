@@ -37,8 +37,6 @@ services:
     privileged: true
     env_file:
       - ./sacct_env
-    ports:
-      - "80:80"
     depends_on:
       - acct-db
 
@@ -51,9 +49,7 @@ services:
     volumes: *master-volumes
     privileged: true
     env_file:
-      - ./sacct_env 
-    ports:
-      - "81:80"
+      - ./sacct_env
     depends_on:
       - acct-db
 
@@ -61,7 +57,7 @@ services:
     image: slurm-lab:latest
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 2
       resources:
         limits:
           cpus: '2'
@@ -69,6 +65,22 @@ services:
     networks:
       - default
     volumes: *common-volumes
+    depends_on:
+      - master-1
+      - master-2
+  
+  jupyterhub:
+    image: slurm-lab:latest
+    container_name: slurm-lab-jupyterhub
+    hostname: slurm-lab-jupyterhub
+    networks:
+      - default
+    volumes: *master-volumes
+    privileged: true
+    env_file:
+      - ./sacct_env 
+    ports:
+      - "80:80"
     depends_on:
       - master-1
       - master-2
