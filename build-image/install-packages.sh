@@ -10,8 +10,8 @@ yum -y module install python39
 yum -y module enable python39-devel
 yum -y install python39-devel
 pip3 install packaging
-pip3 install jupyterlab
-
+pip3 install jupyterlab bash_kernel
+python3 -m bash_kernel.install
 yum clean all
 
 # Create users
