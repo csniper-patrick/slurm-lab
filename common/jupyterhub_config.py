@@ -1354,7 +1354,14 @@ c.Spawner.notebook_dir = '~/tutorials'
 #  .. versionchanged:: 1.2
 #      `Authenticator.whitelist` renamed to `allowed_users`
 #  Default: set()
-# c.Authenticator.allowed_users = set()
+c.Authenticator.allowed_users = {
+    "jeremie",
+    "aelita",
+    "yumi",
+    "william",
+    "ulrich",
+    "odd"
+}
 
 ## The max age (in seconds) of authentication info
 #          before forcing a refresh of user auth info.
