@@ -7,6 +7,7 @@ FROM rockylinux/rockylinux:8
 COPY --from=build /opt/slurm-repo /opt/slurm-repo
 COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY build-el/install-packages.sh common/config-task.sh ./
+COPY tutorials /etc/skel/tutorials
 RUN ./install-packages.sh && ./config-task.sh
 
 # Copy files to /etc/slurm/

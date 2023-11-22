@@ -1,7 +1,6 @@
 x-master-volumes: &master-volumes
   - spool-slurmctld:/var/spool/slurmctld
   - homedir:/home
-  - /run/podman/podman.sock:/run/podman/podman.sock
 
 x-common-volumes: &common-volumes
   - homedir:/home
@@ -26,6 +25,8 @@ services:
     volumes: *database-volumes
     env_file:
       - ./sacct_env
+    healthcheck:
+      test: "healthcheck.sh --su-mysql --connect --innodb_initialized"
   
   master-1:
     image: slurm-lab:latest
@@ -38,13 +39,10 @@ services:
     env_file:
       - ./sacct_env
     depends_on:
-      - acct-db
+      acct-db:
+        condition: service_healthy
     healthcheck:
       test: "systemctl is-active slurmctld"
-      interval: 30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
 
   master-2:
     image: slurm-lab:latest
@@ -57,13 +55,10 @@ services:
     env_file:
       - ./sacct_env
     depends_on:
-      - acct-db
+      acct-db:
+        condition: service_healthy
     healthcheck:
       test: "systemctl is-active slurmctld"
-      interval: 30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
 
   compute:
     image: slurm-lab:latest
@@ -82,6 +77,8 @@ services:
         condition: service_healthy
       master-2:
         condition: service_healthy
+    healthcheck:
+      test: "systemctl is-active slurmd"
   
   jupyterhub:
     image: slurm-lab:latest
@@ -98,6 +95,8 @@ services:
     depends_on:
       - master-1
       - master-2
+    healthcheck:
+      test: "systemctl is-active jupyter-hub"
     
 networks:
   default: {}
