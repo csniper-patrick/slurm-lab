@@ -8,6 +8,8 @@ COPY --from=build /opt/slurm-repo /opt/slurm-repo
 COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY build-el/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
+COPY common/ssh_config /etc/skel/.ssh/config
+COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
 
 # Copy files to /etc/slurm/

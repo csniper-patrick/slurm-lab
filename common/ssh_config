@@ -1,0 +1,6 @@
+Host *
+	ForwardX11 yes
+	ForwardX11Trusted yes
+	Compression yes
+	ServerAliveInterval 60
+    StrictHostKeyChecking no
