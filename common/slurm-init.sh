@@ -1,48 +1,24 @@
 #!/bin/bash
+ENV_ROOT=$(dirname ${0})
 
 # Generate slurmdbd.conf
-cat > $(dirname ${0})/slurmdbd.conf <<EOF
-#
-# Example slurmdbd.conf file.
-#
-# See the slurmdbd.conf man page for more information.
-#
-# Archive info
-#ArchiveJobs=yes
-#ArchiveDir="/tmp"
-#ArchiveSteps=yes
-#ArchiveScript=
-#JobPurge=12
-#StepPurge=1
-#
-# Authentication info
-AuthType=auth/munge
-#AuthInfo=/var/run/munge/munge.socket.2
-#
-# slurmDBD info
-#DbdAddr=localhost
-DbdHost=slurm-lab-master-2
-DbdBackupHost=slurm-lab-master-1
-#DbdPort=7031
-SlurmUser=slurm
-#MessageTimeout=300
-DebugLevel=verbose
-#DefaultQOS=normal,standby
-LogFile=/var/log/slurm/slurmdbd.log
-PidFile=/var/run/slurmdbd.pid
-#PluginDir=/usr/lib/slurm
-#PrivateData=accounts,users,usage,jobs
-#TrackWCKey=yes
-#
-# Database info
-StorageType=accounting_storage/mysql
-StorageHost=slurm-lab-db-1
-#StoragePort=1234
-StoragePass=${MYSQL_PASSWORD:-password}
-StorageUser=${MYSQL_USER:-slurm}
-StorageLoc=${MYSQL_DATABASE:-slurm_acct_db}
-EOF
+${ENV_ROOT}/bin/jinja2 \
+    -D MYSQL_DATABASE="${MYSQL_DATABASE}" \
+    -D MYSQL_USER="${MYSQL_USER}" \
+    -D MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
+    ${ENV_ROOT}/slurmdbd.conf.j2 > /etc/slurm/slurmdbd.conf
+
+# Generate slurm.conf
+${ENV_ROOT}/bin/jinja2 ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
+
+# Generate cgroup.conf
+${ENV_ROOT}/bin/jinja2 \
+    -D CGROUP_CONSTRAINCORES="${CGROUP_CONSTRAINCORES}" \
+    -D CGROUP_CONSTRAINDEVICES="${CGROUP_CONSTRAINDEVICES}" \
+    -D CGROUP_CONSTRAINRAMSPACE="${CGROUP_CONSTRAINRAMSPACE}" \
+    -D CGROUP_CONSTRAINSWAPSPACE="${CGROUP_CONSTRAINSWAPSPACE}" \
+    ${ENV_ROOT}/cgroup.conf.j2 > /etc/slurm/cgroup.conf
 
 # ensure file permission and ownership 
-chown -R slurm:slurm $(dirname ${0}) /var/spool/slurmctld
-chmod 0600 $(dirname ${0})/slurmdbd.conf
+chown -R slurm:slurm /etc/slurm /var/spool/slurmctld
+chmod 0600 /etc/slurm/slurmdbd.conf

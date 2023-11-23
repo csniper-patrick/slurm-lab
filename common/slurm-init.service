@@ -4,7 +4,7 @@ Before=slurmdbd.service slurmctld.service slurmd.service
 
 [Service]
 Type=oneshot
-ExecStart=/etc/slurm/slurm-init.sh
+ExecStart=/opt/templates/slurm-init.sh
 RemainAfterExit=yes
 
 [Install]
