@@ -177,7 +177,7 @@ c = get_config()  #noqa
 #  Default: 'jupyterhub.auth.PAMAuthenticator'
 # c.JupyterHub.authenticator_class = 'jupyterhub.auth.PAMAuthenticator'
 c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
-c.DummyAuthenticator.password = "P@ssw0rd"
+c.DummyAuthenticator.password = ""
 
 ## The base URL of the entire application.
 #  
@@ -1152,7 +1152,7 @@ c.Spawner.default_url = '/lab'
 #  Note that this does *not* prevent users from accessing files outside of this
 #  path! They can do so with many other means.
 #  Default: ''
-c.Spawner.notebook_dir = '~/tutorials'
+# c.Spawner.notebook_dir = ''
 
 ## Allowed scopes for oauth tokens issued by this server's oauth client.
 #  
