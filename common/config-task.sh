@@ -18,3 +18,7 @@ useradd -g lyoko yumi
 useradd -g lyoko william
 useradd -g lyoko ulrich
 useradd -g lyoko odd
+
+# Install jinja2 and jinja2-cli
+python3 -m venv /opt/templates/
+/opt/templates/bin/python3 -m pip install jinja2-cli

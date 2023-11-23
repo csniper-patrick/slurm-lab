@@ -1,0 +1,7 @@
+###
+# Slurm cgroup support configuration file.
+###
+ConstrainCores={{ CGROUP_CONSTRAINCORES | default("yes", true) }}
+ConstrainDevices={{ CGROUP_CONSTRAINDEVICES | default("yes", true) }}
+ConstrainRAMSpace={{ CGROUP_CONSTRAINRAMSPACE | default("yes", true) }}
+ConstrainSwapSpace={{ CGROUP_CONSTRAINSWAPSPACE | default("yes", true) }}

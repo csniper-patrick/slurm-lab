@@ -13,17 +13,18 @@ COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
 
 # Copy files to /etc/slurm/
-COPY --chown=slurm:slurm common/slurm.conf common/cgroup.conf common/slurm-init.sh /etc/slurm/
 
 # slurm related files
 COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
 COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
-COPY common/slurmd-env /etc/sysconfig/slurmd
 
 # Jupyter Hub files
 COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
 COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+
+# Templates
+COPY common/*.j2 common/slurm-init.sh /opt/templates/
 
 # custom services
 COPY common/slurm-init.service common/jupyter-hub.service /etc/systemd/system/
