@@ -4,6 +4,7 @@ Before=slurmdbd.service slurmctld.service slurmd.service
 
 [Service]
 Type=oneshot
+EnvironmentFile=/opt/templates/.env
 ExecStart=/opt/templates/slurm-init.sh
 RemainAfterExit=yes
 

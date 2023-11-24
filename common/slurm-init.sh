@@ -6,10 +6,13 @@ ${ENV_ROOT}/bin/jinja2 \
     -D MYSQL_DATABASE="${MYSQL_DATABASE}" \
     -D MYSQL_USER="${MYSQL_USER}" \
     -D MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
+    -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
     ${ENV_ROOT}/slurmdbd.conf.j2 > /etc/slurm/slurmdbd.conf
 
 # Generate slurm.conf
-${ENV_ROOT}/bin/jinja2 ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
+${ENV_ROOT}/bin/jinja2 \
+    -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
+    ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
 
 # Generate cgroup.conf
 ${ENV_ROOT}/bin/jinja2 \

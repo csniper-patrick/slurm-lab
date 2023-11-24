@@ -30,10 +30,15 @@ PidFile=/var/run/slurmdbd.pid
 #PrivateData=accounts,users,usage,jobs
 #TrackWCKey=yes
 #
+{% if JWKS is defined and JWKS|length %}
+# Enable RS256 JWT With public key set
+AuthAltTypes=auth/jwt
+AuthAltParameters=jwks={{ JWKS }}
+{% endif %}
 # Database info
 StorageType=accounting_storage/mysql
 StorageHost=slurm-lab-db-1
 #StoragePort=1234
-StoragePass={{ MYSQL_PASSWORD | default("password", true)}}
+StoragePass={{ MYSQL_PASSWORD | default("password", true) }}
 StorageUser={{ MYSQL_USER | default("slurm", true) }}
 StorageLoc={{ MYSQL_DATABASE | default("slurm_acct_db", true) }}
