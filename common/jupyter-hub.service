@@ -1,6 +1,6 @@
 [Unit]
 Description=Jupyter Hub Server
-ConditionHost=slurm-lab-jupyterhub
+ConditionHost=slurm-lab-client
 
 [Service]
 User=root

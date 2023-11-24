@@ -1,12 +1,44 @@
 x-master-volumes: &master-volumes
   - spool-slurmctld:/var/spool/slurmctld
   - homedir:/home
+  - ./.env:/opt/templates/.env
 
 x-common-volumes: &common-volumes
   - homedir:/home
+  - ./.env:/opt/templates/.env
 
 x-database-volumes: &database-volumes
   - slurm_acct_db:/var/lib/mysql
+
+x-master-container: &master-container
+  image: slurm-lab:latest
+  networks:
+    - default
+  volumes: *master-volumes
+  privileged: true
+  env_file:
+    - ./.env
+  healthcheck:
+    test: "systemctl is-active slurmctld"
+  depends_on:
+      acct-db:
+        condition: service_healthy
+
+x-compute-container: &compute-container
+  image: slurm-lab:latest
+  privileged: true
+  env_file:
+    - ./.env
+  networks:
+    - default
+  volumes: *common-volumes
+  depends_on:
+    master-1:
+      condition: service_healthy
+    master-2:
+      condition: service_healthy
+  healthcheck:
+    test: "systemctl is-active slurmd"
 
 volumes:
   spool-slurmctld:
@@ -24,79 +56,47 @@ services:
     hostname: slurm-lab-db-1
     volumes: *database-volumes
     env_file:
-      - ./sacct_env
+      - ./.env
     healthcheck:
       test: "healthcheck.sh --su-mysql --connect --innodb_initialized"
   
   master-1:
-    image: slurm-lab:latest
+    <<: *master-container
     container_name: slurm-lab-master-1
     hostname: slurm-lab-master-1
-    networks:
-      - default
-    volumes: *master-volumes
-    privileged: true
-    env_file:
-      - ./sacct_env
-    depends_on:
-      acct-db:
-        condition: service_healthy
-    healthcheck:
-      test: "systemctl is-active slurmctld"
 
   master-2:
-    image: slurm-lab:latest
+    <<: *master-container
     container_name: slurm-lab-master-2
     hostname: slurm-lab-master-2
-    networks:
-      - default
-    volumes: *master-volumes
-    privileged: true
-    env_file:
-      - ./sacct_env
-    depends_on:
-      acct-db:
-        condition: service_healthy
-    healthcheck:
-      test: "systemctl is-active slurmctld"
+    
 
   compute:
-    image: slurm-lab:latest
+    <<: *compute-container
     deploy:
       mode: replicated
       replicas: 2
       resources:
         limits:
           cpus: '2'
-    privileged: true
-    networks:
-      - default
-    volumes: *common-volumes
-    depends_on:
-      master-1:
-        condition: service_healthy
-      master-2:
-        condition: service_healthy
-    healthcheck:
-      test: "systemctl is-active slurmd"
   
-  jupyterhub:
+  client:
     image: slurm-lab:latest
-    container_name: slurm-lab-jupyterhub
-    hostname: slurm-lab-jupyterhub
+    container_name: slurm-lab-client
+    hostname: slurm-lab-client
     networks:
       - default
     volumes: *master-volumes
     privileged: true
     env_file:
-      - ./sacct_env 
+      - ./.env
     ports:
       - "80:80"
     depends_on:
       - master-1
       - master-2
     healthcheck:
-      test: "systemctl is-active jupyter-hub"
+      test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
     
 networks:
   default: {}

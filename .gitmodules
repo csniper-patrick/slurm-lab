@@ -1,3 +1,6 @@
 [submodule "slurm"]
 	path = slurm
 	url = https://github.com/SchedMD/slurm.git
+[submodule "json-web-key-generator"]
+	path = json-web-key-generator
+	url = https://github.com/bspk/json-web-key-generator.git

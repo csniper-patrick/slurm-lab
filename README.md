@@ -1,5 +1,5 @@
-# slurm-lab
-This project aim to provide an easy way to set up a slurm environment on your personal computer for testing, learning, and development purposes. 
+# SLURM Lab
+This project aim to provide an easy way to set up a slurm cluster environment on your personal computer for testing, learning, and development purposes. 
 
 ## Getting started
 
@@ -27,15 +27,24 @@ Make sure you have enabled `podman compose` as well.
    podman compose -f compose.dev.yml up -d 
    ```
 4. Start playing around in your local web browser. If you go to [localhost](http://localhost/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, william, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
+5. In this setup, it is required to have slurm account and user created to submit jobs. You can run the following command to create: (eg. if you login as jeremie):
+   ```
+   sudo sacctmgr -i create account lyoko
+   sudo sacctmgr -i create user jeremie account=lyoko
+   ```
+6. You can access and explore the Slurm REST API exposed at localhost port 80 as well.
+   The json web keyset location is specified by `AuthAltParameters` in `slurm.conf`
+   Please refer to the relevant documents for authenticating your request.
+   - [Slurm REST API](https://slurm.schedmd.com/rest.html)
+   - [API reference](https://slurm.schedmd.com/rest_api.html)
 
-### Architecture
+
+### Components
 The cluster consist of these components:
 1. 2 master container running slurm control daemon (slurmctld) and slurm accounting daemon (slurmdbd)
-2. 1 mariadb container
-3. 1 frontend container running jupyter hub, and configured as slurm client
-4. N (default 2) compute container running slurmd
-
-If you find 2 compute container is not enough for your test you can scale it up(eg. scale to 4 compute containers):
-```
-podman compose -f compose.dev.yml up -d --scale compute=4 --no-recreate
-```
+2. 1 mariadb container, serving database for slurm accounting. 
+3. 1 client container, configured as submission node, hosting jupyter hub and slurmrestd as well. 
+4. N (default 2) compute container running slurmd. You can scale it in runtime:
+   ```
+   podman compose -f compose.dev.yml up -d --scale compute=4 --no-recreate
+   ``` 

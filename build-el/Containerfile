@@ -1,3 +1,11 @@
+FROM maven:3.8.6-openjdk-11 AS key-generator
+COPY json-web-key-generator /build
+WORKDIR /build
+# Build the app
+# Artifact will be stored at /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar
+RUN mvn package
+RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
+
 FROM rockylinux/rockylinux:8 as build
 COPY build-el/build-slurm-rpm.sh ./
 COPY slurm ./slurm-src
@@ -12,16 +20,18 @@ COPY common/ssh_config /etc/skel/.ssh/config
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
 
-# Copy files to /etc/slurm/
-
 # slurm related files
 COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
 COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
+COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
 
 # Jupyter Hub files
 COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
 COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+COPY common/proxy.conf /etc/nginx/conf.d/
+COPY common/nginx-extra.conf /etc/systemd/system/nginx.service.d/
 
 # Templates
 COPY common/*.j2 common/slurm-init.sh /opt/templates/
@@ -35,7 +45,7 @@ COPY common/lyoko.sudo /etc/sudoers.d/lyoko
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurm-init}.service /etc/systemd/system/jupyter-hub.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurm-init,slurmrestd,nginx}.service /etc/systemd/system/jupyter-hub.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service
 
 ENTRYPOINT [ "/sbin/init" ]

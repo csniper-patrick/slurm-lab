@@ -149,6 +149,11 @@ SlurmdLogFile=/var/log/slurmd.log
 # SuspendTime=60
 #
 #
+{% if JWKS is defined and JWKS|length %}
+# Enable RS256 JWT With public key set
+AuthAltTypes=auth/jwt
+AuthAltParameters=jwks={{ JWKS }}
+{% endif %}
 # Enable Dynamic Nodes
 MaxNodeCount=128
 TreeWidth=65533
