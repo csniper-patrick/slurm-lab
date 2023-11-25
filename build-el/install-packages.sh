@@ -13,7 +13,7 @@ yum -y module install nodejs:18
 yum -y module install nginx:1.22
 
 # install extra packages
-yum -y install tmux sudo vim man ansible iproute nmap
+yum -y install tmux sudo vim man ansible iproute nmap wget 
 
 # clean yum
 yum clean all
