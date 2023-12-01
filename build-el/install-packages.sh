@@ -3,7 +3,7 @@
 # Install slurm
 yum install -y yum-utils epel-release
 yum-config-manager --enable powertools
-yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,example-configs} mpich mpich-devel mpich-doc @development gcc-gfortran hwloc pmix pam_script openssh-server
+yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,example-configs} mpich mpich-devel mpich-doc @development gcc-gfortran hwloc pmix openssh-server
 
 # install jupyterhub
 yum -y install python3.11 python3.11-pip python3.11-devel
@@ -17,3 +17,10 @@ yum -y install tmux sudo vim man ansible iproute nmap wget
 
 # clean yum
 yum clean all
+
+for pam_file in /etc/pam.d/{password-auth,system-auth} ; do
+	cat >> ${pam_file} <<-EOF
+		auth        optional      pam_exec.so /etc/slurm/create-account-user.sh
+		session     optional      pam_exec.so /etc/slurm/create-account-user.sh
+	EOF
+done

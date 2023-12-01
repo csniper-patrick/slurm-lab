@@ -16,6 +16,7 @@ COPY --from=build /opt/slurm-repo /opt/slurm-repo
 COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY build-el/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
+COPY common/.tmux.conf common/ansible/ /etc/skel/
 COPY common/ssh_config /etc/skel/.ssh/config
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
@@ -26,6 +27,7 @@ COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
 COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
+COPY common/create-account-user.sh /etc/slurm
 
 # Jupyter Hub files
 COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/

@@ -27,12 +27,7 @@ Make sure you have enabled `podman compose` as well.
    podman compose -f compose.dev.yml up -d 
    ```
 4. Start playing around in your local web browser. If you go to [localhost](http://localhost/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, william, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
-5. In this setup, it is required to have slurm account and user created to submit jobs. You can run the following command to create: (eg. if you login as jeremie):
-   ```
-   sudo sacctmgr -i create account lyoko
-   sudo sacctmgr -i create user jeremie account=lyoko
-   ```
-6. You can access and explore the Slurm REST API exposed at localhost port 80 as well.
+5. You can access and explore the Slurm REST API exposed at localhost port 80 as well.
    The json web keyset location is specified by `AuthAltParameters` in `slurm.conf`
    Please refer to the relevant documents for authenticating your request.
    - [Slurm REST API](https://slurm.schedmd.com/rest.html)

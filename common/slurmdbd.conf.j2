@@ -27,7 +27,7 @@ DebugLevel=verbose
 LogFile=/var/log/slurm/slurmdbd.log
 PidFile=/var/run/slurmdbd.pid
 #PluginDir=/usr/lib/slurm
-#PrivateData=accounts,users,usage,jobs
+{# PrivateData={{ PRIVATEDATA | default("accounts,users,usage,jobs", true) }} #}
 #TrackWCKey=yes
 #
 {% if JWKS is defined and JWKS|length %}
