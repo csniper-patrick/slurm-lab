@@ -1,3 +1,8 @@
+import os
+import batchspawner
+import jupyterhub_moss
+import subprocess
+import json
 # Configuration file for jupyterhub.
 
 c = get_config()  #noqa
@@ -785,7 +790,30 @@ c.JupyterHub.port = 8000
 #    - localprocess: jupyterhub.spawner.LocalProcessSpawner
 #    - simple: jupyterhub.spawner.SimpleLocalProcessSpawner
 #  Default: 'jupyterhub.spawner.LocalProcessSpawner'
-c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'
+
+match os.getenv("JUPYTER_SPAWNER", default="sudo") :
+    case "moss":
+        jupyterhub_moss.set_config(c)
+        output = json.loads(subprocess.check_output("scontrol show partition --json", shell=True))
+        print(output)
+        c.MOSlurmSpawner.partitions = {}
+        for partition in output["partitions"]:
+            c.MOSlurmSpawner.partitions[partition["name"]]={
+                "architecture": os.uname().machine,
+                "description": partition["name"],
+                "simple": True,
+                "jupyter_environments": {
+                    "default": {
+                        "description": "Default",
+                        "path": "/opt/jupyterhub/bin",
+                        "modules": "",
+                        "add_to_path": True,
+                        "prologue": "",
+                    },
+                },
+            }
+    case default: 
+        c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'
 
 ## Path to SSL certificate file for the public facing interface of the proxy
 #  
