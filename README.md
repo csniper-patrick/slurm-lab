@@ -40,6 +40,26 @@ The cluster consist of these components:
 2. 1 mariadb container, serving database for slurm accounting. 
 3. 1 client container, configured as submission node, hosting jupyter hub and slurmrestd as well. 
 4. N (default 2) compute container running slurmd. You can scale it in runtime:
-   ```
-   podman compose -f compose.dev.yml up -d --scale compute=4 --no-recreate
-   ``` 
+
+## TODO/Wishlist
+Feature test
+* Federation & multi-cluster operation
+* Debian package build
+* CICD, release, publish, versioning
+* pam_slurm_adopt & nss_slurm
+
+Tutorials
+* Admin guide
+  * intro to command (scontrol, sacctmgr, sacct, slurm.conf, slurmdbd.conf)
+  * node, partition operation (ephemeral)
+  * slurm conf change (persistent) (ansible)
+  * reservation
+  * admin level
+    * pam_exec.so
+  * config examples
+    * floating partition
+    * prolog drop cache
+    * node shuffle
+  * GPU/Gres (no resource)
+* MPI guide
+* REST API example
