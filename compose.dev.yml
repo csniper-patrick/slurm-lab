@@ -54,7 +54,7 @@ volumes:
 
 services:
   acct-db:
-    image: mariadb:latest
+    image: mariadb:lts
     container_name: slurm-lab-db-1
     hostname: slurm-lab-db-1
     volumes: *database-volumes

@@ -35,7 +35,7 @@ MpiDefault=none
 #MpiParams=ports=#-#
 #PluginDir=
 #PlugStackConfig=
-#PrivateData=jobs
+{# PrivateData={{ PRIVATEDATA | default("reservations,usage,jobs", true) }} #}
 ProctrackType=proctrack/cgroup
 #Prolog=
 #PrologFlags=Contain
@@ -118,7 +118,7 @@ AccountingStorageBackupHost=slurm-lab-master-1
 #AccountingStoragePort=
 AccountingStorageType=accounting_storage/slurmdbd
 #AccountingStorageUser=
-#AccountingStoreFlags=
+AccountingStoreFlags=job_env,job_script
 #JobCompHost=
 #JobCompLoc=
 #JobCompPass=
