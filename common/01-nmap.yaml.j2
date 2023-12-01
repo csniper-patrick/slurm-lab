@@ -1,7 +1,7 @@
 plugin: community.general.nmap
 strict: false
-address: 10.89.0.0/24 # use ip command to find the actual local network 
-exclude: 10.89.0.1
+address: {{ SUBNET }}
+exclude: {{ GATEWAY }}
 port: 22, 443, 80, 3306, 6817, 6818, 6819, 6820
 
 groups:

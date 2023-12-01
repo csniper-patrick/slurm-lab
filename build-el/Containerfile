@@ -16,7 +16,7 @@ COPY --from=build /opt/slurm-repo /opt/slurm-repo
 COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY build-el/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
-COPY common/.tmux.conf common/ansible/ /etc/skel/
+COPY common/.tmux.conf /etc/skel/
 COPY common/ssh_config /etc/skel/.ssh/config
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
@@ -37,6 +37,10 @@ COPY common/nginx-extra.conf /etc/systemd/system/nginx.service.d/
 
 # Templates
 COPY common/*.j2 common/slurm-init.sh /opt/templates/
+
+# ansible inventory
+COPY common/ansible.cfg /etc/ansible/ansible.cfg
+RUN mkdir -pv /etc/ansible/inventory
 
 # custom services
 COPY common/slurm-init.service common/jupyter-hub.service /etc/systemd/system/

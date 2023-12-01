@@ -24,6 +24,12 @@ ${ENV_ROOT}/bin/jinja2 \
     -D CGROUP_CONSTRAINSWAPSPACE="${CGROUP_CONSTRAINSWAPSPACE}" \
     ${ENV_ROOT}/cgroup.conf.j2 > /etc/slurm/cgroup.conf
 
+# Generate ansible inventory
+${ENV_ROOT}/bin/jinja2 \
+    -D GATEWAY=$(ip route | grep default | head -1 | awk '{print $3}') \
+    -D SUBNET=$(ip route | grep -v default | head -1 | awk '{print $1}') \
+    ${ENV_ROOT}/01-nmap.yaml.j2 > /etc/ansible/inventory/01-nmap.yaml
+
 # ensure file permission and ownership 
 chown -R slurm:slurm /etc/slurm /var/spool/slurmctld
 chmod 0600 /etc/slurm/slurmdbd.conf
