@@ -54,12 +54,12 @@ Tutorials
   * node, partition operation (ephemeral)
   * slurm conf change (persistent) (ansible)
   * reservation
-  * admin level
+  * create account and user
+    * admin level
     * pam_exec.so
   * config examples
     * floating partition
     * prolog drop cache
     * node shuffle
   * GPU/Gres (no resource)
-* MPI guide
 * REST API example
