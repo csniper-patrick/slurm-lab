@@ -2,7 +2,7 @@ plugin: community.general.nmap
 strict: false
 address: {{ SUBNET }}
 exclude: {{ GATEWAY }}
-port: 22, 443, 80, 3306, 6817, 6818, 6819, 6820
+port: 22, 443, 80, 3306, 6817-6820
 
 groups:
     slurmctld:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"
