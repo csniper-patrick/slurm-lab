@@ -1,5 +1,9 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 stages:
   - test
+  - build
 
 ipynb-output-clear-test:
   image: quay.io/jupyter/minimal-notebook
@@ -9,3 +13,20 @@ ipynb-output-clear-test:
     - pipeline/ipynb-output-clear-test.sh
   only:
     - merge_requests
+
+rocky-image-build:
+  image: quay.io/podman/stable
+  stage: build
+  script:
+    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - |
+        if [[ "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH" ]] then
+          TAG="latest"
+        else
+          TAG="$CI_COMMIT_BRANCH"
+        fi
+    - podman build --pull --platform linux/arm64,linux/amd64 -f build-el/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:$TAG" .
+    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:$TAG"
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      when: always
