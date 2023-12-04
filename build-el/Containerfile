@@ -1,4 +1,4 @@
-FROM maven:3.8.6-openjdk-11 AS key-generator
+FROM docker.io/library/maven:3.8.6-openjdk-11 AS key-generator
 COPY json-web-key-generator /build
 WORKDIR /build
 # Build the app
@@ -6,12 +6,12 @@ WORKDIR /build
 RUN mvn package
 RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
 
-FROM rockylinux/rockylinux:8 as build
+FROM quay.io/rockylinux/rockylinux:8 as build
 COPY build-el/build-slurm-rpm.sh ./
 COPY slurm ./slurm-src
 RUN ./build-slurm-rpm.sh
 
-FROM rockylinux/rockylinux:8
+FROM quay.io/rockylinux/rockylinux:8
 COPY --from=build /opt/slurm-repo /opt/slurm-repo
 COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY build-el/install-packages.sh common/config-task.sh ./
