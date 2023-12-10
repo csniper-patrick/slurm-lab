@@ -49,17 +49,4 @@ Feature test
 * pam_slurm_adopt & nss_slurm
 
 Tutorials
-* Admin guide
-  * intro to command (scontrol, sacctmgr, sacct, slurm.conf, slurmdbd.conf)
-  * node, partition operation (ephemeral)
-  * slurm conf change (persistent) (ansible)
-  * reservation
-  * create account and user
-    * admin level
-    * pam_exec.so
-  * config examples
-    * floating partition
-    * prolog drop cache
-    * node shuffle
-  * GPU/Gres (no resource)
-* REST API example
+* REST API python exploration lab

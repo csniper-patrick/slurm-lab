@@ -8,9 +8,10 @@
 # Put this file on all nodes of your cluster.
 # See the slurm.conf man page for more information.
 #
-ClusterName=slurm-lab
-SlurmctldHost=slurm-lab-master-1
-SlurmctldHost=slurm-lab-master-2
+ClusterName={{ CLUSTERNAME | default("slurm-lab", true) }}
+{%- for host in ( SLURMCTLDHOST | default("slurm-lab-master-1,slurm-lab-master-2", true) ).split(',') %}
+SlurmctldHost={{ host }}
+{%- endfor %}
 #
 #DisableRootJobs=NO
 #EnforcePartLimits=NO

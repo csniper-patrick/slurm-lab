@@ -5,8 +5,8 @@ exclude: {{ GATEWAY }}
 port: 22, 443, 80, 3306, 6817-6820
 
 groups:
-    slurmctld:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"
-    slurmd:     "ports | selectattr('port', '==', '6818') | selectattr('state', '==', 'open')"
-    slurmdbd:   "ports | selectattr('port', '==', '6819') | selectattr('state', '==', 'open')"
-    slurmrestd: "ports | selectattr('port', '==', '6820') | selectattr('state', '==', 'open')"
-    db:         "ports | selectattr('port', '==', '3306') | selectattr('state', '==', 'open')"
+    slurmctld_host:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"
+    slurmd_host:     "ports | selectattr('port', '==', '6818') | selectattr('state', '==', 'open')"
+    slurmdbd_host:   "ports | selectattr('port', '==', '6819') | selectattr('state', '==', 'open')"
+    slurmrestd_host: "ports | selectattr('port', '==', '6820') | selectattr('state', '==', 'open')"
+    db_host:         "ports | selectattr('port', '==', '3306') | selectattr('state', '==', 'open')"
