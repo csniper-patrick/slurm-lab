@@ -20,7 +20,7 @@ Make sure you have enabled `podman compose` or `podman-compose` as well.
    ```
 2. Build the container image
    ```
-   podman build --tag slurm-lab:latest -f build-el8/Containerfile .
+   podman build --tag slurm-lab:el8 -f build-el8/Containerfile .
    ```
 3. Starting the container cluster
    ```
