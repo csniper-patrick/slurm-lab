@@ -11,10 +11,10 @@ x-database-volumes: &database-volumes
   - slurm_acct_db:/var/lib/mysql
 
 x-local-image: &local-image
-  image: localhost/slurm-lab:latest
+  image: localhost/slurm-lab:${TAG:-el8}
   build:
     context: .
-    dockerfile: build-el/Containerfile
+    dockerfile: build-${TAG:-el8}/Containerfile
 
 x-master-container: &master-container
   <<: *local-image

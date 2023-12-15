@@ -6,15 +6,23 @@ WORKDIR /build
 RUN mvn package
 RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
 
-FROM quay.io/rockylinux/rockylinux:8 as build
-COPY build-el/build-slurm-rpm.sh ./
+FROM quay.io/rockylinux/rockylinux:8 as build-slurm
+COPY build-el8/*.sh ./
 COPY slurm ./slurm-src
 RUN ./build-slurm-rpm.sh
 
+FROM quay.io/rockylinux/rockylinux:8 as build-mpi
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
+COPY build-el8/install-packages.sh common/openmpi-build.sh ./
+RUN ./install-packages.sh
+RUN ./openmpi-build.sh
+
 FROM quay.io/rockylinux/rockylinux:8
-COPY --from=build /opt/slurm-repo /opt/slurm-repo
-COPY --from=build /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
-COPY build-el/install-packages.sh common/config-task.sh ./
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
+COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY build-el8/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf /etc/skel/
 COPY common/ssh_config /etc/skel/.ssh/config
@@ -45,13 +53,16 @@ RUN mkdir -pv /etc/ansible/inventory
 # custom services
 COPY common/slurm-init.service common/jupyter-hub.service /etc/systemd/system/
 
-# sudoer
+# others
 COPY common/lyoko.sudo /etc/sudoers.d/lyoko
+COPY common/modules /opt/modules
+COPY common/module-path.sh /etc/profile.d/z99-module-path.sh
+COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
 
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurm-init,slurmrestd,nginx}.service /etc/systemd/system/jupyter-hub.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service
 
 ENTRYPOINT [ "/sbin/init" ]
