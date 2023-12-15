@@ -24,6 +24,13 @@ rocky-image-build:
     - podman push "$CI_REGISTRY_IMAGE/slurm-lab:latest"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes:
+          - build-el8/**/*
+          - common/**/*
+          - json-web-key-generator
+          - slurm
+          - tutorials/**/*
+          - .gitlab-ci.yml
       when: always
 
 debian-image-build:
@@ -32,7 +39,14 @@ debian-image-build:
   script:
     - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - podman build --pull -f build-deb12/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:deb12" .
-    - podman push "$$CI_REGISTRY_IMAGE/slurm-lab:deb12"
+    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:deb12"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes:
+          - build-deb12/**/*
+          - common/**/*
+          - json-web-key-generator
+          - slurm
+          - tutorials/**/*
+          - .gitlab-ci.yml
       when: always
