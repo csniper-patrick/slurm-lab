@@ -9,7 +9,7 @@ Install and set up Podman Desktop or Docker Desktop on your computer.
 - [Podman Installation Instructions](https://podman.io/docs/installation)
 - [Docker Installation Instructions](https://docs.docker.com/desktop/install/mac-install/)
 
-Make sure you have enabled `podman compose` as well.
+Make sure you have enabled `podman compose` or `podman-compose` as well.
 
 ### Build and run the project
 
@@ -20,7 +20,7 @@ Make sure you have enabled `podman compose` as well.
    ```
 2. Build the container image
    ```
-   podman build --tag slurm-lab:latest -f build-el/Containerfile .
+   podman build --tag slurm-lab:latest -f build-el8/Containerfile .
    ```
 3. Starting the container cluster
    ```

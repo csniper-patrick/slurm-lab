@@ -3,6 +3,7 @@ strict: false
 address: {{ SUBNET }}
 exclude: {{ GATEWAY }}
 port: 22, 443, 80, 3306, 6817-6820
+sudo: true
 
 groups:
     slurmctld_host:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"

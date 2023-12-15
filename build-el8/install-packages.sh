@@ -3,7 +3,8 @@
 # Install slurm
 yum install -y yum-utils epel-release
 yum-config-manager --enable powertools
-yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,example-configs,contribs,devel,libpmi,pam_slurm} mpich mpich-devel mpich-doc @development gcc-gfortran hwloc pmix openssh-server
+# yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc pmix openssh-server rdma-core rdma-core-devel librdmacm
+yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel
 
 # install jupyterhub
 yum -y install python3.11 python3.11-pip python3.11-devel

@@ -19,14 +19,20 @@ rocky-image-build:
   stage: build
   script:
     - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - |
-        if [[ "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH" ]] then
-          TAG="latest"
-        else
-          TAG="$CI_COMMIT_BRANCH"
-        fi
-    - podman build --pull -f build-el/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:$TAG" .
-    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:$TAG"
+    - podman build --pull -f build-el8/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:el8" -t "$CI_REGISTRY_IMAGE/slurm-lab:latest" .
+    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:el8"
+    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:latest"
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      when: always
+
+debian-image-build:
+  image: quay.io/podman/stable
+  stage: build
+  script:
+    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - podman build --pull -f build-deb12/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:deb12" .
+    - podman push "$$CI_REGISTRY_IMAGE/slurm-lab:deb12"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       when: always

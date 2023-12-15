@@ -12,12 +12,12 @@ mkdir -p /opt/jupyterhub/etc/jupyterhub/
 # Create users
 useradd -r -b /var/lib slurm
 groupadd lyoko
-useradd -g lyoko jeremie
-useradd -g lyoko aelita
-useradd -g lyoko yumi
-useradd -g lyoko william
-useradd -g lyoko ulrich
-useradd -g lyoko odd
+useradd -m -g lyoko --shell /bin/bash jeremie
+useradd -m -g lyoko --shell /bin/bash aelita
+useradd -m -g lyoko --shell /bin/bash yumi
+useradd -m -g lyoko --shell /bin/bash william
+useradd -m -g lyoko --shell /bin/bash ulrich
+useradd -m -g lyoko --shell /bin/bash odd
 
 # Install jinja2 and jinja2-cli
 python3 -m venv /opt/templates/
