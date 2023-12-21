@@ -159,5 +159,5 @@ AuthAltParameters=jwks={{ JWKS }}
 MaxNodeCount=128
 TreeWidth=65533
 
-# COMPUTE NODES
-PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
+# Default partition
+PartitionName={{ CLUSTERNAME | default("slurm-lab", true ) }}-default Nodes=ALL Default=YES MaxTime=INFINITE State=UP
