@@ -44,6 +44,20 @@ x-compute-container: &compute-container
     master-2:
       condition: service_healthy
 
+# Uncomment the following templates for second cluster
+# x-lyoko-volumes: &lyoko-volumes
+#   - homedir:/home
+#   - ./.env-lyoko:/opt/templates/.env
+
+# x-lyoko-container: &lyoko-container
+#   <<: *local-image
+#   privileged: true
+#   env_file:
+#     - ./.env-lyoko
+#   networks:
+#     - default
+#   volumes: *lyoko-volumes
+
 volumes:
   spool-slurmctld:
     external: false
@@ -93,6 +107,34 @@ services:
       - "80:80"
     healthcheck:
       test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
-    
+      
+  # Uncomment the following templates for second cluster
+  # master-lyoko:
+  #   <<: *lyoko-container
+  #   container_name: slurm-lab-master-lyoko
+  #   hostname: slurm-lab-master-lyoko
+  #   healthcheck:
+  #     test: "systemctl is-active slurmctld"
+  #   depends_on:
+  #     master-1:
+  #       condition: service_healthy
+  #     master-2:
+  #       condition: service_healthy
+
+  # compute-lyoko:
+  #   <<: *lyoko-container
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '2'
+  #         memory: 4G
+  #   healthcheck:
+  #     test: "systemctl is-active slurmd"
+  #   depends_on:
+  #     master-lyoko:
+  #       condition: service_healthy
+
 networks:
   default: {}

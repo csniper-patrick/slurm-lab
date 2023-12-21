@@ -14,6 +14,8 @@ ${ENV_ROOT}/bin/jinja2 \
 ${ENV_ROOT}/bin/jinja2 \
     -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
     -D PRIVATEDATA="${SLURM_PRIVATEDATA}" \
+    -D SLURMCTLDHOST="${SLURMCTLDHOST}" \
+    -D CLUSTERNAME="${CLUSTERNAME}" \
     ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
 
 # Generate cgroup.conf
