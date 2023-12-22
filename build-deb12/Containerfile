@@ -60,6 +60,9 @@ COPY common/modules /opt/modules
 COPY common/module-path.sh /etc/profile.d/z99-module-path.sh
 COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
 
+# link static doc
+RUN find /usr/share/ -iname slurm.html -exec dirname {} \; | xargs -i ln -sf {} /usr/share/nginx/html/doc
+
 RUN mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
     && ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target \
