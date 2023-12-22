@@ -32,7 +32,7 @@ Make sure you have enabled `podman compose` or `podman-compose` as well.
    Please refer to the relevant documents for authenticating your request.
    - [Slurm REST API](https://slurm.schedmd.com/rest.html)
    - [API reference](https://slurm.schedmd.com/rest_api.html)
-
+6. There official document of the exact version of slurm installed in the container is available at [localhost/doc](http://localhost/doc).
 
 ### Components
 The cluster consist of these components:
