@@ -8,7 +8,7 @@ HPL.out      output file name (if any)
 64          NBs
 0            PMAP process mapping (0=Row-,1=Column-major)
 1            # of process grids (P x Q)
-2            Ps
+4            Ps
 2            Qs
 16.0         threshold
 1            # of panel fact
