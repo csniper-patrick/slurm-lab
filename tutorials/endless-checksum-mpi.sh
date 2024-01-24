@@ -1,5 +1,5 @@
 #!/bin/bash -lx
-#SBATCH --ntasks=2
+#SBATCH --ntasks=4
 #SBATCH --mem=1024
 module load mpi
 which mpirun

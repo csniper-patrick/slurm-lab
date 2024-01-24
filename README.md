@@ -35,13 +35,13 @@ Make sure you have enabled `podman compose` or `podman-compose` as well.
 6. There official document of the exact version of slurm installed in the container is available at [localhost/doc](http://localhost/doc).
 
 ### Components
-The cluster consist of these components:
+The cluster consists of these components:
 1. 2 master container running slurm control daemon (slurmctld) and slurm accounting daemon (slurmdbd)
 2. 1 mariadb container, serving database for slurm accounting. 
 3. 1 client container, configured as submission node, hosting jupyter hub and slurmrestd as well. 
-4. N (default 2) compute container running slurmd. You can scale it in runtime. eg.:
+4. N (default 4) compute container running slurmd. You can scale it up in runtime. eg.:
 ```
-podman compose -f compose.dev.yml up -d --scale compute=4 --no-recreate
+podman compose -f compose.dev.yml up -d --scale compute=6 --no-recreate
 ```
 
 ## TODO/Wishlist

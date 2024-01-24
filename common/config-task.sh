@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install Jupyterhub
+# Prepare Jupyterhub environment
 python3 -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install wheel
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub jupyterlab bash_kernel
@@ -8,6 +8,7 @@ python3 -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m bash_kernel.install
 npm install -g configurable-http-proxy
 mkdir -p /opt/jupyterhub/etc/jupyterhub/
+/opt/jupyterhub/bin/python3 -m pip install PyJWT requests
 
 # Create users
 useradd -r -b /var/lib slurm
