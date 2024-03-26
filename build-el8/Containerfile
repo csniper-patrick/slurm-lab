@@ -1,4 +1,4 @@
-FROM docker.io/library/maven:3.8.6-openjdk-11 AS key-generator
+FROM docker.io/library/maven:3.8.7-openjdk-18-slim AS key-generator
 COPY json-web-key-generator /build
 WORKDIR /build
 # Build the app
