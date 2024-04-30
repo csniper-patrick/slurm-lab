@@ -49,6 +49,3 @@ Feature test
 * Federation & multi-cluster (advanced)
 * CICD, release, publish, versioning
 * pam_slurm_adopt & nss_slurm
-
-Tutorials
-* REST API python exploration lab
