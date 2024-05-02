@@ -45,7 +45,16 @@ podman compose -f compose.dev.yml up -d --scale compute=6 --no-recreate
 ```
 
 ## TODO/Wishlist
-Feature test
-* Federation & multi-cluster (advanced)
+Feature test:
 * CICD, release, publish, versioning
 * pam_slurm_adopt & nss_slurm
+* Lua script:
+  * burst buffer
+  * job submission plugin
+  * routing partition
+* power save
+* health check
+* auth/slurm authentication mode. (get rid of munge)
+* rocky/rhel 9 support
+* scron
+* scrun (to test this in a container, it will be nested container, difficult)
