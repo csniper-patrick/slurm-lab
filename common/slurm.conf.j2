@@ -149,7 +149,11 @@ SlurmdLogFile=/var/log/slurmd.log
 #SuspendRate=
 #SuspendTime=60
 #
-#
+# Authentication
+{% if AUTHTYPE is defined and AUTHTYPE == "auth/slurm" %}
+AuthType=auth/slurm
+AuthInfo=use_client_ids
+{% endif %}
 {% if JWKS is defined and JWKS|length %}
 # Enable RS256 JWT With public key set
 AuthAltTypes=auth/jwt

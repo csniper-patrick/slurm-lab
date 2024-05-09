@@ -35,6 +35,7 @@ COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system
 COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+COPY common/sackd-extra.conf common/service-restart.conf /etc/systemd/system/sackd.service.d/
 COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
 COPY common/create-account-user.sh /etc/slurm
 

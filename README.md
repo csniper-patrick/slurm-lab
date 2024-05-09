@@ -54,7 +54,6 @@ Feature test:
   * routing partition
 * power save
 * health check
-* auth/slurm authentication mode. (get rid of munge)
 * rocky/rhel 9 support
 * scron
 * scrun (to test this in a container, it will be nested container, difficult)

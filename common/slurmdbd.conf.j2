@@ -12,8 +12,6 @@
 #StepPurge=1
 #
 # Authentication info
-AuthType=auth/munge
-#AuthInfo=/var/run/munge/munge.socket.2
 #
 # slurmDBD info
 #DbdAddr=localhost
@@ -29,7 +27,14 @@ PidFile=/var/run/slurmdbd.pid
 #PluginDir=/usr/lib/slurm
 PrivateData={{ PRIVATEDATA | default("accounts,users,usage,jobs,reservations", true) }}
 #TrackWCKey=yes
-#
+# Authentication
+{% if AUTHTYPE is defined and AUTHTYPE == "auth/slurm" %}
+AuthType=auth/slurm
+AuthInfo=use_client_ids
+{% else %}
+AuthType=auth/munge
+#AuthInfo=/var/run/munge/munge.socket.2
+{% endif %}
 {% if JWKS is defined and JWKS|length %}
 # Enable RS256 JWT With public key set
 AuthAltTypes=auth/jwt
