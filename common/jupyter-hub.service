@@ -4,7 +4,7 @@ ConditionHost=slurm-lab-client
 
 [Service]
 User=root
-EnvironmentFile=/opt/templates/.env
+EnvironmentFile=-/opt/templates/.env
 Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"
 ExecStart=/opt/jupyterhub/bin/jupyterhub -f /opt/jupyterhub/etc/jupyterhub/jupyterhub_config.py
 

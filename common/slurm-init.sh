@@ -8,6 +8,7 @@ ${ENV_ROOT}/bin/jinja2 \
     -D MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
     -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
     -D PRIVATEDATA="${SLURMDB_PRIVATEDATA}" \
+    -D AUTHTYPE="${AUTHTYPE}" \
     ${ENV_ROOT}/slurmdbd.conf.j2 > /etc/slurm/slurmdbd.conf
 
 # Generate slurm.conf
@@ -16,6 +17,7 @@ ${ENV_ROOT}/bin/jinja2 \
     -D PRIVATEDATA="${SLURM_PRIVATEDATA}" \
     -D SLURMCTLDHOST="${SLURMCTLDHOST}" \
     -D CLUSTERNAME="${CLUSTERNAME}" \
+    -D AUTHTYPE="${AUTHTYPE}" \
     ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
 
 # Generate cgroup.conf

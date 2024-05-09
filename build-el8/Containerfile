@@ -34,6 +34,7 @@ COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system
 COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+COPY common/sackd-extra.conf common/service-restart.conf /etc/systemd/system/sackd.service.d/
 COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
 COPY common/create-account-user.sh /etc/slurm
 
@@ -65,7 +66,7 @@ RUN find /usr/share/ -iname slurm.html -exec dirname {} \; | xargs -i ln -sf {} 
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx,sackd}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service
 
 ENTRYPOINT [ "/sbin/init" ]

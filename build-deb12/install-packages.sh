@@ -3,7 +3,7 @@
 # Install slurm
 apt-get -y update
 # apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sview,doc,dev,libpmi0,libpmi2-0} mpich libmpich-dev libmpich12 environment-modules gfortran hwloc openssh-server systemd systemd-sysv cron libpmix-bin libpmix-dev libpmix2 systemd tmux vim wget git openssh-* libsysfs2
-apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sview,doc,dev,libpmi0,libpmi2-0} environment-modules gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2
+apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sackd,sview,doc,dev,libpmi0,libpmi2-0} environment-modules gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2
 
 # install jupyterhub
 apt-get -y install python3 python3-{pip,dev,venv} libpython3-{dev,stdlib}
