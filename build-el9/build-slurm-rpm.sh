@@ -1,6 +1,6 @@
 #!/bin/bash -x
 dnf -y install @development yum-utils rpm-build epel-release
-dnf config-manager --enable powertools
+dnf config-manager --enable crb
 dnf -y install munge munge-devel mariadb mariadb-devel gtk2 gtk2-devel gtk3 gtk3-devel http-parser http-parser-devel json-c json-c-devel libyaml libyaml-devel libjwt libjwt-devel wget python3 readline-devel pam-devel perl-ExtUtils-MakeMaker perl-devel perl-JSON-PP createrepo_c hdf5 hdf5-devel man2html man2html-core pam pam-devel freeipmi freeipmi-devel numactl numactl-devel pmix pmix-devel hwloc hwloc-devel
 ver=$(grep "Version:" slurm-src/slurm.spec | head -n 1 | awk '{print $2}' )
 mv slurm-src slurm-${ver}

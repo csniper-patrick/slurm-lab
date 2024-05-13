@@ -1,7 +1,12 @@
 #!/bin/bash
 
+# find best python
+SYS_PYTHON=$(which python3.12)
+SYS_PYTHON=${SYS_PYTHON:-$(which python3.11)}
+SYS_PYTHON=${SYS_PYTHON:-$(which python3)}
+
 # Prepare Jupyterhub environment
-python3 -m venv /opt/jupyterhub/
+${SYS_PYTHON} -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install wheel
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub jupyterlab bash_kernel
 /opt/jupyterhub/bin/python3 -m pip install ipywidgets jupyterlab-slurm sudospawner jupyterhub_moss 
