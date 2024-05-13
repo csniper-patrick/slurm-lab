@@ -14,6 +14,7 @@ RUN ./build-slurm-rpm.sh
 FROM quay.io/rockylinux/rockylinux:8 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
+COPY ompi ./ompi-src
 COPY build-el8/install-packages.sh common/openmpi-build.sh ./
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
