@@ -14,6 +14,7 @@ RUN ./build-slurm-deb.sh
 FROM docker.io/library/debian:12 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
+COPY ompi ./ompi-src
 COPY build-deb12/install-packages.sh common/openmpi-build.sh ./
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
