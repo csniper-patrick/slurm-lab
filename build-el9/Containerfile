@@ -1,0 +1,72 @@
+FROM docker.io/library/maven:3.8.7-openjdk-18-slim AS key-generator
+COPY json-web-key-generator /build
+WORKDIR /build 
+# Build the app
+# Artifact will be stored at /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar
+RUN mvn package
+RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
+
+FROM quay.io/rockylinux/rockylinux:9 as build-slurm
+COPY build-el9/*.sh ./
+COPY slurm ./slurm-src
+RUN ./build-slurm-rpm.sh
+
+FROM quay.io/rockylinux/rockylinux:9 as build-mpi
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
+COPY build-el9/install-packages.sh common/openmpi-build.sh ./
+RUN ./install-packages.sh
+RUN ./openmpi-build.sh
+
+FROM quay.io/rockylinux/rockylinux:9
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
+COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY build-el9/install-packages.sh common/config-task.sh ./
+COPY tutorials /etc/skel/tutorials
+COPY common/.tmux.conf /etc/skel/
+COPY common/ssh_config /etc/skel/.ssh/config
+COPY common/auto-ssh-keygen.sh /etc/profile.d/
+RUN ./install-packages.sh && ./config-task.sh
+
+# slurm related files
+COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
+COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
+COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
+COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+COPY common/sackd-extra.conf common/service-restart.conf /etc/systemd/system/sackd.service.d/
+COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
+COPY common/create-account-user.sh /etc/slurm
+
+# Jupyter Hub files
+COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
+COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+COPY common/proxy.conf /etc/nginx/conf.d/
+COPY common/nginx-extra.conf /etc/systemd/system/nginx.service.d/
+
+# Templates
+COPY common/*.j2 common/slurm-init.sh /opt/templates/
+
+# ansible inventory
+COPY common/ansible.cfg /etc/ansible/ansible.cfg
+RUN mkdir -pv /etc/ansible/inventory
+
+# custom services
+COPY common/slurm-init.service common/jupyter-hub.service /etc/systemd/system/
+
+# others
+COPY common/lyoko.sudo /etc/sudoers.d/lyoko
+COPY common/modules /opt/modules
+COPY common/module-path.sh /etc/profile.d/z99-module-path.sh
+COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
+
+# link static doc
+RUN find /usr/share/ -iname slurm.html -exec dirname {} \; | xargs -i ln -sf {} /usr/share/nginx/html/doc
+
+RUN create-munge-key \
+    && mkdir -pv /var/spool/slurmctld \
+    && mkdir -pv /var/spool/slurmd \
+    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx,sackd}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
+    && rm -f /etc/systemd/system/systemd-logind.service
+
+ENTRYPOINT [ "/sbin/init" ]
