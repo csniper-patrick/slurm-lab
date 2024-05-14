@@ -14,15 +14,15 @@ RUN ./build-slurm-rpm.sh
 FROM quay.io/rockylinux/rockylinux:9 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
-COPY ompi ./ompi-src
-COPY build-el9/install-packages.sh common/openmpi-build.sh ./
+COPY mpich ./mpich-src
+COPY build-el9/install-packages.sh common/mpich-build.sh ./
 RUN ./install-packages.sh
-RUN ./openmpi-build.sh
+RUN ./mpich-build.sh
 
 FROM quay.io/rockylinux/rockylinux:9
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
-COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY --from=build-mpi /opt/mpich /opt/mpich
 COPY build-el9/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf /etc/skel/
@@ -36,6 +36,7 @@ COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
 COPY common/sackd-extra.conf common/service-restart.conf /etc/systemd/system/sackd.service.d/
+COPY common/munge-extra.conf common/service-restart.conf /etc/systemd/system/munge.service.d/
 COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
 COPY common/create-account-user.sh /etc/slurm
 
@@ -68,6 +69,6 @@ RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
     && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx,sackd}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
-    && rm -f /etc/systemd/system/systemd-logind.service
+    && rm -f /etc/systemd/system/systemd-logind.service 
 
 ENTRYPOINT [ "/sbin/init" ]
