@@ -14,16 +14,16 @@ RUN ./build-slurm-deb.sh
 FROM docker.io/library/debian:12 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
-COPY ompi ./ompi-src
-COPY build-deb12/install-packages.sh common/openmpi-build.sh ./
+COPY mpich ./mpich-src
+COPY build-deb12/install-packages.sh common/mpich-build.sh ./
 RUN ./install-packages.sh
-RUN ./openmpi-build.sh
+RUN ./mpich-build.sh
 
 
 FROM docker.io/library/debian:12
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
-COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY --from=build-mpi /opt/mpich /opt/mpich
 COPY build-deb12/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf /etc/skel/

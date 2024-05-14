@@ -3,7 +3,7 @@
 # Install slurm
 dnf install -y yum-utils epel-release
 dnf config-manager --enable crb
-dnf install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which environment-modules pmix
+dnf install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which environment-modules
 
 # install jupyterhub
 dnf -y install python3.12 python3.12-pip python3.12-devel
