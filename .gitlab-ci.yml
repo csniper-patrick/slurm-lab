@@ -19,9 +19,9 @@ el9-image-build:
   stage: build
   script:
     - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - podman build --pull -f build-el9/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:el9" -t "$CI_REGISTRY_IMAGE/slurm-lab:latest" .
+    - podman build --pull -f build-el9/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:el9" .
     - podman push "$CI_REGISTRY_IMAGE/slurm-lab:el9"
-    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:latest"
+    
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes:
@@ -38,8 +38,9 @@ el8-image-build:
   stage: build
   script:
     - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - podman build --pull -f build-el8/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:el8" .
+    - podman build --pull -f build-el8/Containerfile -t "$CI_REGISTRY_IMAGE/slurm-lab:el8" -t "$CI_REGISTRY_IMAGE/slurm-lab:latest" .
     - podman push "$CI_REGISTRY_IMAGE/slurm-lab:el8"
+    - podman push "$CI_REGISTRY_IMAGE/slurm-lab:latest"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes:
