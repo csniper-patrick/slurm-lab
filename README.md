@@ -52,8 +52,11 @@ Feature test:
   * burst buffer
   * job submission plugin
   * routing partition
-* power save
-* health check
-* rocky/rhel 9 support
-* scron
 * scrun (to test this in a container, it will be nested container, difficult)
+* Major version 24.05 test
+* build with x11
+
+## Known Issues
+* Documents not available in rocky 9 container
+* Notebook not able to use module command in deb12 container
+* auth/slurm authtype needs more validation
