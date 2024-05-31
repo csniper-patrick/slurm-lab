@@ -7,6 +7,7 @@ mv slurm-src slurm-${ver}
 tar azcvf slurm-${ver}.tar.bz2 slurm-${ver}
 rpmbuild -ta --with slurmrestd --with hdf5 --with hwloc --with numa --with pmix slurm-${ver}.tar.bz2 |& tee build.log
 cd ~
+# create local repo
 mkdir -pv /opt/slurm-repo/Packages
 find /root/rpmbuild/RPMS/ -iname "*.rpm" -exec mv {} /opt/slurm-repo/Packages \;
 createrepo /opt/slurm-repo
@@ -17,3 +18,9 @@ baseurl=file:///opt/slurm-repo/
 gpgcheck=0
 enabled=1
 EOF
+
+# extract documents
+mkdir extract
+cd extract
+rpm2cpio /opt/slurm-repo/Packages/slurm-${ver}*.rpm | cpio -idvm
+find . -iname slurm.html -exec dirname {} \; | xargs -i mv -v {} /opt/doc

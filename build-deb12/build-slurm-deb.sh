@@ -4,6 +4,8 @@ apt-get -y install fakeroot devscripts git wget munge libmunge-dev mariadb-serve
 cd slurm-src
 yes | mk-build-deps -i debian/control
 debuild -b -uc -us
+
+# create local repo
 mkdir /opt/slurm-repo
 cd /opt/slurm-repo
 mv /*.deb /opt/slurm-repo
@@ -12,3 +14,10 @@ dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
 cat > /etc/apt/sources.list.d/slurm.list <<EOF
 deb [trusted=yes] file:/opt/slurm-repo /
 EOF
+
+# extract documents
+cd ~
+mkdir extract
+cd extract
+dpkg-deb -xv /opt/slurm-repo/slurm-smd-doc*.deb .
+find . -iname slurm.html -exec dirname {} \; | xargs -i mv -v {} /opt/doc
