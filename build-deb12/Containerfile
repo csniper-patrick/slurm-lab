@@ -1,4 +1,4 @@
-FROM docker.io/library/maven:3.8.6-openjdk-11 AS key-generator
+FROM docker.io/library/maven:3.8.7-openjdk-18-slim AS key-generator
 COPY json-web-key-generator /build
 WORKDIR /build
 # Build the app
@@ -61,9 +61,7 @@ COPY common/lyoko.sudo /etc/sudoers.d/lyoko
 COPY common/modules /opt/modules
 COPY common/module-path.sh /etc/profile.d/z99-module-path.sh
 COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
-
-# link static doc
-RUN find /usr/share/ -iname slurm.html -exec dirname {} \; | xargs -i ln -sf {} /usr/share/nginx/html/doc
+COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 
 RUN mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \

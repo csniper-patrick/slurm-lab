@@ -4,4 +4,4 @@ PODMAN=${PODMAN:=$(which docker)}
 
 distro=${@:-"el8 el9 deb12"}
 
-echo ${distro} | xargs -n1 -I{} -P 3 ${PODMAN} build -t slurm-lab:{} --squash-all -f build-{}/Containerfile .
+echo ${distro} | xargs -n1 -I{} -P 3 ${PODMAN} build -t slurm-lab:{} --squash -f build-{}/Containerfile .

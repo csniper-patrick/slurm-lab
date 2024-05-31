@@ -57,6 +57,5 @@ Feature test:
 * build with x11
 
 ## Known Issues
-* Documents not available in rocky 9 container
 * Notebook not able to use module command in deb12 container
 * auth/slurm authtype needs more validation
