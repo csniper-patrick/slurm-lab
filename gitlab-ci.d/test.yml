@@ -1,0 +1,8 @@
+ipynb-output-clear-test:
+  image: quay.io/jupyter/minimal-notebook
+  stage: test
+  script:
+    - git config --global --add safe.directory '*'
+    - gitlab-ci.d/ipynb-output-clear-test.sh
+  only:
+    - merge_requests
