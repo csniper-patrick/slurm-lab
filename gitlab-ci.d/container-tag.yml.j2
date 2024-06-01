@@ -1,0 +1,48 @@
+{% for tag in tags %}
+{%- set source_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-" + tag.distro + "-" + slurm_ver -%}
+{% if tag.name is not none %}
+{%- set latest_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:latest-" + tag.name -%}
+{%- set yyyymm_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:"+ YYYYMM + "-" + tag.name -%}
+{% else %}
+{%- set latest_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:latest" -%}
+{%- set yyyymm_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:" + YYYYMM -%}
+{% endif %}
+tag-{{ tag.name | default("default", true) }}-image:
+  stage: deploy
+  image: quay.io/podman/stable
+  before_script:
+    - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
+  script:
+    - podman pull {{ source_tag }}
+    - podman tag {{ source_tag }} {{ latest_tag }} && podman push {{ latest_tag }}
+    - podman tag {{ source_tag }} {{ latest_tag }}-{{ slurm_ver }} && podman push {{ latest_tag }}-{{ slurm_ver }}
+    - podman tag {{ source_tag }} {{ yyyymm_tag }} && podman push {{ yyyymm_tag }}
+    - podman tag {{ source_tag }} {{ yyyymm_tag }}-{{ slurm_ver }} && podman push {{ yyyymm_tag }}-{{ slurm_ver }}
+
+{% endfor %}
+
+{% for tag in tags %}
+{%- set source_tag = "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-" + tag.distro + "-" + slurm_ver -%}
+{% if tag.name is not none %}
+{%- set latest_tag = "${DOCKER_REPO}/slurm-lab:latest-" + tag.name -%}
+{%- set yyyymm_tag = "${DOCKER_REPO}/slurm-lab:"+ YYYYMM + "-" + tag.name -%}
+{% else %}
+{%- set latest_tag = "${DOCKER_REPO}/slurm-lab:latest" -%}
+{%- set yyyymm_tag = "${DOCKER_REPO}/slurm-lab:" + YYYYMM -%}
+{% endif %}
+dockerhub-{{ tag.name | default("default", true) }}-image:
+  stage: deploy
+  image: quay.io/podman/stable
+  before_script:
+    - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
+    - podman login -u "${DOCKER_USERNAME}" -p "${DOCKER_TOKEN}" docker.io
+  script:
+    - podman pull {{ source_tag }}
+    - podman tag {{ source_tag }} {{ latest_tag }} && podman push {{ latest_tag }}
+    - podman tag {{ source_tag }} {{ latest_tag }}-{{ slurm_ver }} && podman push {{ latest_tag }}-{{ slurm_ver }}
+    - podman tag {{ source_tag }} {{ yyyymm_tag }} && podman push {{ yyyymm_tag }}
+    - podman tag {{ source_tag }} {{ yyyymm_tag }}-{{ slurm_ver }} && podman push {{ yyyymm_tag }}-{{ slurm_ver }}
+  rules:
+    - if: $DOCKER_USERNAME && $DOCKER_TOKEN && $DOCKER_REPO
+
+{% endfor %}

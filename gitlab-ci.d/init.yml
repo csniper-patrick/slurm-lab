@@ -1,0 +1,16 @@
+generate-pipeline:
+  stage: init
+  image: docker.io/library/python:3.12
+  script: 
+    - python -m pip install jinja2-cli
+    - slurm_ver=$(grep "Version:" slurm/slurm.spec | head -n 1 | awk '{print $2}' | cut -d. -f-2 )
+    - YYYYMM=$(date +"%Y%m")
+    - jinja2 gitlab-ci.d/container-build.yml.j2 ${PIPELINE_CONF} --format=json -D slurm_ver=${slurm_ver} > gitlab-ci.d/container-build.yml
+    - jinja2 gitlab-ci.d/container-tag.yml.j2 ${PIPELINE_CONF} --format=json -D slurm_ver=${slurm_ver} -D YYYYMM=${YYYYMM} > gitlab-ci.d/container-tag.yml
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: "1 days"
+    paths:
+      - ${CI_PROJECT_DIR}/gitlab-ci.d/container-build.yml
+      - ${CI_PROJECT_DIR}/gitlab-ci.d/container-tag.yml
