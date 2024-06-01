@@ -45,7 +45,7 @@ To develop and build this project locally, you need to clone all the submodules 
    ```
    or
    ```
-   podman compose -f compose.yml build
+   podman compose -f compose.dev.yml build
    ```
 3. Starting the container cluster
    ```
