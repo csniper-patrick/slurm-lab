@@ -1,0 +1,139 @@
+x-master-volumes: &master-volumes
+  - spool-slurmctld:/var/spool/slurmctld
+  - homedir:/home
+  - ./.env:/opt/templates/.env
+
+x-common-volumes: &common-volumes
+  - homedir:/home
+  - ./.env:/opt/templates/.env
+
+x-database-volumes: &database-volumes
+  - slurm_acct_db:/var/lib/mysql
+
+# choose the image you want to use. 
+# go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
+x-local-image: &local-image
+  image: docker.io/csniper/slurm-lab:${TAG:-latest}
+
+x-master-container: &master-container
+  <<: *local-image
+  networks:
+    - default
+  volumes: *master-volumes
+  privileged: true
+  env_file:
+    - ./.env
+  healthcheck:
+    test: "systemctl is-active slurmctld"
+  depends_on:
+      acct-db:
+        condition: service_healthy
+
+x-compute-container: &compute-container
+  <<: *local-image
+  privileged: true
+  env_file:
+    - ./.env
+  networks:
+    - default
+  volumes: *common-volumes
+  depends_on:
+    master-1:
+      condition: service_healthy
+    master-2:
+      condition: service_healthy
+
+# Uncomment the following templates for second cluster
+# x-lyoko-volumes: &lyoko-volumes
+#   - homedir:/home
+#   - ./.env-lyoko:/opt/templates/.env
+
+# x-lyoko-container: &lyoko-container
+#   <<: *local-image
+#   privileged: true
+#   env_file:
+#     - ./.env-lyoko
+#   networks:
+#     - default
+#   volumes: *lyoko-volumes
+
+volumes:
+  spool-slurmctld:
+    external: false
+  homedir:
+    external: false
+  slurm_acct_db:
+    external: false
+
+services:
+  acct-db:
+    image: mariadb:lts
+    container_name: slurm-lab-db-1
+    hostname: slurm-lab-db-1
+    volumes: *database-volumes
+    env_file:
+      - ./.env
+    healthcheck:
+      test: "healthcheck.sh --su-mysql --connect --innodb_initialized"
+  
+  master-1:
+    <<: *master-container
+    container_name: slurm-lab-master-1
+    hostname: slurm-lab-master-1
+
+  master-2:
+    <<: *master-container
+    container_name: slurm-lab-master-2
+    hostname: slurm-lab-master-2
+    
+  compute:
+    <<: *compute-container
+    deploy:
+      mode: replicated
+      replicas: 4
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    healthcheck:
+      test: "systemctl is-active slurmd"
+
+  client:
+    <<: *compute-container
+    container_name: slurm-lab-client
+    hostname: slurm-lab-client
+    ports:
+      - "80:80"
+    healthcheck:
+      test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
+      
+  # Uncomment the following templates for second cluster
+  # master-lyoko:
+  #   <<: *lyoko-container
+  #   container_name: slurm-lab-master-lyoko
+  #   hostname: slurm-lab-master-lyoko
+  #   healthcheck:
+  #     test: "systemctl is-active slurmctld"
+  #   depends_on:
+  #     master-1:
+  #       condition: service_healthy
+  #     master-2:
+  #       condition: service_healthy
+
+  # compute-lyoko:
+  #   <<: *lyoko-container
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '2'
+  #         memory: 4G
+  #   healthcheck:
+  #     test: "systemctl is-active slurmd"
+  #   depends_on:
+  #     master-lyoko:
+  #       condition: service_healthy
+
+networks:
+  default: {}
