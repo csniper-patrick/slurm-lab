@@ -152,6 +152,7 @@ SlurmdLogFile=/var/log/slurmd.log
 # Authentication
 {% if AUTHTYPE is defined and AUTHTYPE == "auth/slurm" %}
 AuthType=auth/slurm
+CredType=cred/slurm
 AuthInfo=use_client_ids
 {% endif %}
 {% if JWKS is defined and JWKS|length %}
