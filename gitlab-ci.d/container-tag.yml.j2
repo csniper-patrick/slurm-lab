@@ -43,6 +43,6 @@ dockerhub-{{ tag.name | default("default", true) }}-image:
     - podman tag {{ source_tag }} {{ yyyymm_tag }} && podman push {{ yyyymm_tag }}
     - podman tag {{ source_tag }} {{ yyyymm_tag }}-{{ slurm_ver }} && podman push {{ yyyymm_tag }}-{{ slurm_ver }}
   rules:
-    - if: $DOCKER_USERNAME && $DOCKER_TOKEN && $DOCKER_REPO
+    - if: ${DOCKER_USERNAME} && ${DOCKER_TOKEN} && ${DOCKER_REPO}
 
 {% endfor %}
