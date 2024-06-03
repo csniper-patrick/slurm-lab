@@ -6,7 +6,7 @@ yum-config-manager --enable powertools
 yum install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which environment-modules
 
 # install jupyterhub
-yum -y install python3.11 python3.11-pip python3.11-devel
+yum -y install python3.12 python3.12-pip python3.12-devel
 yum -y module install nodejs:18
 
 # install nginx
