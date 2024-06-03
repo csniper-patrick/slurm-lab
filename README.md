@@ -12,13 +12,13 @@ Install and set up Podman Desktop or Docker Desktop on your computer.
 Make sure you have enabled `podman compose` or `podman-compose` as well.
 
 ### Quick start
-The images built from this project are published to [dockerhub - csniper/slurm-lab](https://hub.docker.com/repository/docker/csniper/slurm-lab/). You could start your slurm-lab container cluster following these simple steps. 
+The images built from this project are published to [Docker hub - csniper/slurm-lab](https://hub.docker.com/r/csniper/slurm-lab). You could start your slurm-lab container cluster following these simple steps. 
 ```
 git clone https://gitlab.com/CSniper/slurm-lab.git
 cd slurm-lab
 podman compose -f compose.yml up -d
 ```
-If you want to run your lab using other available images, check out the list of available tags [here](https://hub.docker.com/repository/docker/csniper/slurm-lab/tags). Then specify the tag you want to use in file `.env`.  
+If you want to run your lab using other available images, check out the list of available tags [here](https://hub.docker.com/r/csniper/slurm-lab/tags). Then specify the tag you want to use in file `.env`.  
 eg. specify tag latest-deb to use Debian-based image. 
 ```
 TAG=latest-deb
@@ -81,4 +81,4 @@ Feature test:
 * build with x11
 
 ## Known Issues
-* Jupyter Notebook is not able to use `module` command in Debian 12 container.
+* Jupyter Notebook is not able to use the `module` command in Debian 12 container.
