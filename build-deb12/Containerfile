@@ -26,7 +26,7 @@ COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list
 COPY --from=build-mpi /opt/mpich /opt/mpich
 COPY build-deb12/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
-COPY common/.tmux.conf /etc/skel/
+COPY common/.tmux.conf LICENSE /etc/skel/
 COPY common/ssh_config /etc/skel/.ssh/config
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
