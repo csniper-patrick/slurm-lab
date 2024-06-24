@@ -1,7 +1,7 @@
 {% for distro in distros %}
 {%- set tag = "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-" + distro + "-" + slurm_ver -%}
 {%- set containerfile = "build-" + distro + "/Containerfile" -%}
-build-{{ distro }}-image:
+build-{{ distro }}-amd64-image:
   stage: build
   image: quay.io/podman/stable
   hooks:
@@ -10,7 +10,7 @@ build-{{ distro }}-image:
   before_script:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
-  - ( podman pull {{ tag }} ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }} . && podman push {{ tag }} )
+  - ( podman pull {{ tag }}-amd64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-amd64 . && podman push {{ tag }}-amd64 )
 
 build-{{ distro }}-arm64-image:
   stage: build
@@ -22,6 +22,7 @@ build-{{ distro }}-arm64-image:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
   - ( podman pull {{ tag }}-arm64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push {{ tag }}-arm64 )
+  allow_failure: true
   tags:
     - arm64
 
