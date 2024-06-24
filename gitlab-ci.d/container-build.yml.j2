@@ -12,4 +12,18 @@ build-{{ distro }}-image:
   script:
   - ( podman pull {{ tag }} ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }} . && podman push {{ tag }} )
 
+build-{{ distro }}-arm64-image:
+  stage: build
+  image: quay.io/podman/stable
+  hooks:
+    pre_get_sources_script:
+      - umask 0022
+  before_script:
+    - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
+  script:
+  - ( podman pull {{ tag }}-arm64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push {{ tag }}-arm64 )
+  tags:
+    - arm64
+
+
 {% endfor %}
