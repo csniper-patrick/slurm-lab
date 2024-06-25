@@ -15,6 +15,8 @@ build-{{ distro }}-amd64-image:
 build-{{ distro }}-arm64-image:
   stage: build
   image: quay.io/podman/stable
+  timeout: 10h
+  retry: 2
   hooks:
     pre_get_sources_script:
       - umask 0022
@@ -22,7 +24,6 @@ build-{{ distro }}-arm64-image:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
   - ( podman pull {{ tag }}-arm64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push {{ tag }}-arm64 )
-  allow_failure: true
   tags:
     - arm64
 

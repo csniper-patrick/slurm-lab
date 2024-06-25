@@ -23,7 +23,6 @@ eg. specify tag latest-deb to use Debian-based image.
 ```
 TAG=latest-deb
 ```
-Only x86-64 images are published for now. If you are using this project on an ARM architecture machine (eg. macOS, raspberry pi), please follow the instructions in the next section to build your image locally. I developed this project on an Apple silicon Macbook Pro so ARM architecture should work fine.
 
 ### Develop and build the project locally
 To develop and build this project locally, you need to clone all the submodules and use compose file `compose.dev.yml` instead. 
