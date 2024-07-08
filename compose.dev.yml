@@ -1,11 +1,6 @@
-x-master-volumes: &master-volumes
+x-common-volumes: &common-volumes
   - spool-slurmctld:/var/spool/slurmctld
   - homedir:/home
-  - ./.env:/opt/templates/.env
-
-x-common-volumes: &common-volumes
-  - homedir:/home
-  - ./.env:/opt/templates/.env
 
 x-database-volumes: &database-volumes
   - slurm_acct_db:/var/lib/mysql
@@ -20,7 +15,7 @@ x-master-container: &master-container
   <<: *local-image
   networks:
     - default
-  volumes: *master-volumes
+  volumes: *common-volumes
   privileged: true
   env_file:
     - ./.env
@@ -47,7 +42,6 @@ x-compute-container: &compute-container
 # Uncomment the following templates for second cluster
 # x-lyoko-volumes: &lyoko-volumes
 #   - homedir:/home
-#   - ./.env-lyoko:/opt/templates/.env
 
 # x-lyoko-container: &lyoko-container
 #   <<: *local-image
@@ -104,7 +98,7 @@ services:
     container_name: slurm-lab-client
     hostname: slurm-lab-client
     ports:
-      - "80:80"
+      - "8080:80"
     healthcheck:
       test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
       

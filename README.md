@@ -50,13 +50,13 @@ To develop and build this project locally, you need to clone all the submodules 
    ```
    podman compose -f compose.dev.yml up -d 
    ```
-4. Start playing around in your local web browser. If you go to [localhost](http://localhost/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, william, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
+4. Start playing around in your local web browser. If you go to [localhost](http://localhost:8080/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, william, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
 5. You can access and explore the Slurm REST API exposed at localhost port 80 as well.
    The json web keyset location is specified by `AuthAltParameters` in `slurm.conf`
    Please refer to the relevant documents for authenticating your request.
    - [Slurm REST API](https://slurm.schedmd.com/rest.html)
    - [API reference](https://slurm.schedmd.com/rest_api.html)
-6. There official document of the exact version of Slurm installed in the container is available at [http://localhost/doc](http://localhost/doc).
+6. There official document of the exact version of Slurm installed in the container is available at [http://localhost:8080/doc](http://localhost:8080/doc).
 
 ### Components
 The cluster consists of these components:
