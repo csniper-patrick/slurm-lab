@@ -815,6 +815,14 @@ match os.getenv("JUPYTER_SPAWNER", default="sudo") :
     case default: 
         c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'
 
+# allow cross-origin
+c.Spawner.args = [f'--NotebookApp.allow_origin={"*"}']
+c.JupyterHub.tornado_settings = {
+    'headers': {
+        'Access-Control-Allow-Origin': '*',
+    },
+}
+
 ## Path to SSL certificate file for the public facing interface of the proxy
 #  
 #          When setting this, you should also set ssl_key

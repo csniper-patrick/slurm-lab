@@ -31,11 +31,11 @@ COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
 
 # slurm related files
-COPY common/slurmctld-extra.conf common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
-COPY common/slurmdbd-extra.conf common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
+COPY common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
+COPY common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
+COPY common/service-restart.conf /etc/systemd/system/sackd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
-COPY common/sackd-extra.conf common/service-restart.conf /etc/systemd/system/sackd.service.d/
 COPY common/munge-extra.conf common/service-restart.conf /etc/systemd/system/munge.service.d/
 COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
 COPY common/create-account-user.sh /etc/slurm
@@ -44,17 +44,16 @@ COPY common/create-account-user.sh /etc/slurm
 COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
 COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
 COPY common/proxy.conf /etc/nginx/conf.d/
-COPY common/nginx-extra.conf /etc/systemd/system/nginx.service.d/
 
 # Templates
-COPY common/*.j2 common/slurm-init.sh /opt/templates/
+COPY common/*.j2 common/entrypoint.sh /opt/templates/
 
 # ansible inventory
 COPY common/ansible.cfg /etc/ansible/ansible.cfg
 RUN mkdir -pv /etc/ansible/inventory
 
 # custom services
-COPY common/slurm-init.service common/jupyter-hub.service /etc/systemd/system/
+COPY common/jupyter-hub.service /etc/systemd/system/
 
 # others
 COPY common/lyoko.sudo /etc/sudoers.d/lyoko
@@ -66,7 +65,7 @@ COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/{munge,slurmctld,slurmd,slurmdbd,slurmrestd,nginx,sackd}.service /etc/systemd/system/{jupyter-hub,slurm-init}.service /etc/systemd/system/multi-user.target.wants/ \
+    && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service 
 
-ENTRYPOINT [ "/sbin/init" ]
+ENTRYPOINT [ "/opt/templates/entrypoint.sh" ]

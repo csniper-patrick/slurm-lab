@@ -103,7 +103,7 @@ services:
     container_name: slurm-lab-client
     hostname: slurm-lab-client
     ports:
-      - "80:80"
+      - "8080:80"
     healthcheck:
       test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
       
