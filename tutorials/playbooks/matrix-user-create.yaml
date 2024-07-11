@@ -1,0 +1,35 @@
+- hosts: slurmctld_host,slurmd_host,slurm-lab-client
+  tasks:
+      - name: ensure group matrix exist
+        group:
+          name: matrix
+          
+      - name: ensure user smith exist
+        user:
+          name: smith
+          group: matrix
+          generate_ssh_key: true
+
+- hosts: slurmctld_host,slurm-lab-client
+  tasks:
+      - name: ensure group matrix exist
+        group:
+          name: matrix
+          
+      - name: ensure user trinity exist
+        user:
+          name: trinity
+          group: matrix
+          generate_ssh_key: true
+
+- hosts: slurm-lab-client
+  tasks:
+      - name: ensure group matrix exist
+        group:
+          name: matrix
+          
+      - name: ensure user neo exist
+        user:
+          name: neo
+          group: matrix
+          generate_ssh_key: true

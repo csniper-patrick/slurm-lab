@@ -1,0 +1,64 @@
+- hosts: slurmctld_host,slurmd_host,slurm-lab-client
+  tasks:
+    - name: Modify slurmdbd.conf
+      lineinfile:
+        path: /etc/slurm/slurmdbd.conf
+        backup: true
+        regexp: "{{ item.param }}="
+        line: "{{ item.param }}={{ item.value }}"
+      loop:
+        - param: AuthType
+          value: auth/slurm
+        - param: AuthInfo
+          value: use_client_ids
+      notify:
+        - restart-slurmdb
+    
+    - name: Modify slurm.conf
+      lineinfile:
+        path: /etc/slurm/slurm.conf
+        backup: true
+        regexp: "{{ item.param }}="
+        line: "{{ item.param }}={{ item.value }}"
+      loop:
+        - param: AuthType
+          value: auth/slurm
+        - param: CredType
+          value: cred/slurm
+        - param: AuthInfo
+          value: use_client_ids
+      notify:
+        - restart-slurmctld
+        - restart-slurmd
+        - restart-sackd
+    
+    - name: stop munge
+      systemd_service:
+        name: munge
+        state: stopped
+        enabled: false
+        
+  handlers:
+    - name: restart-slurmdb
+      systemd_service:
+        name: slurmdbd
+        state: restarted
+      when: "'slurmctld_host' in group_names"
+    
+    - name: restart-slurmctld
+      systemd_service:
+        name: slurmctld
+        state: restarted
+      when: "'slurmctld_host' in group_names"
+    
+    - name: restart-slurmd
+      systemd_service:
+        name: slurmd
+        state: restarted
+      when: "'slurmd_host' in group_names"
+    
+    - name: restart-sackd
+      systemd_service:
+        name: slurmd
+        state: restarted
+      when: "'slurmd_host' not in group_names and 'slurmctld_host' not in group_names"

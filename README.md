@@ -16,7 +16,7 @@ The images built from this project are published to [Docker hub - csniper/slurm-
 ```
 git clone https://gitlab.com/CSniper/slurm-lab.git
 cd slurm-lab
-podman compose -f compose.yml up -d
+podman compose up -d
 ```
 If you want to run your lab using other available images, check out the list of available tags [here](https://hub.docker.com/r/csniper/slurm-lab/tags). Then specify the tag you want to use in file `.env`.  
 eg. specify tag latest-deb to use Debian-based image. 
@@ -50,7 +50,7 @@ To develop and build this project locally, you need to clone all the submodules 
    ```
    podman compose -f compose.dev.yml up -d 
    ```
-4. Start playing around in your local web browser. If you go to [localhost](http://localhost:8080/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, william, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
+4. Start playing around in your local web browser. If you go to [localhost](http://localhost:8080/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
 5. You can access and explore the Slurm REST API exposed at localhost port 80 as well.
    The json web keyset location is specified by `AuthAltParameters` in `slurm.conf`
    Please refer to the relevant documents for authenticating your request.
@@ -65,19 +65,16 @@ The cluster consists of these components:
 3. 1 client container, configured as submission node, hosting Jupyter hub and slurmrestd as well. 
 4. N (default 4) compute container running slurmd. You can scale it up in runtime. eg.:
 ```
-podman compose -f compose.dev.yml up -d --scale compute=6 --no-recreate
+podman compose up -d --scale compute=6 --no-recreate
 ```
 
 ## TODO/Wishlist
 Feature test:
-* pam_slurm_adopt & nss_slurm
 * Lua script:
   * burst buffer
   * job submission plugin
   * routing partition
-* scrun (to test this in a container, it will be a nested container, difficult)
-* next major version 24.05 test
-* build with x11
 
 ## Known Issues
 * Jupyter Notebook is not able to use the `module` command in Debian 12 container.
+* ansible inventory `nmap` plugin doesn't work well with debian
