@@ -155,6 +155,10 @@ AuthType=auth/slurm
 CredType=cred/slurm
 AuthInfo=use_client_ids
 {% endif %}
+
+# Enable nss_slurm
+LaunchParameters=enable_nss_slurm
+
 {% if JWKS is defined and JWKS|length %}
 # Enable RS256 JWT With public key set
 AuthAltTypes=auth/jwt

@@ -18,6 +18,7 @@ yum -y install tmux sudo vim man ansible iproute nmap wget
 # clean yum
 yum clean all
 
+# create slurm account and user on login
 for pam_file in /etc/pam.d/{password-auth,system-auth} ; do
 	cat >> ${pam_file} <<-EOF
 		auth        optional      pam_exec.so /etc/slurm/create-account-user.sh

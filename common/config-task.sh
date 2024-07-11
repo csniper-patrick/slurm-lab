@@ -21,7 +21,6 @@ groupadd lyoko
 useradd -m -g lyoko --shell /bin/bash jeremie
 useradd -m -g lyoko --shell /bin/bash aelita
 useradd -m -g lyoko --shell /bin/bash yumi
-useradd -m -g lyoko --shell /bin/bash william
 useradd -m -g lyoko --shell /bin/bash ulrich
 useradd -m -g lyoko --shell /bin/bash odd
 
@@ -33,3 +32,15 @@ ${SYS_PYTHON} -m venv /opt/templates/
 dd if=/dev/random of=/etc/slurm/slurm.key bs=1024 count=1
 chown slurm:slurm /etc/slurm/slurm.key
 chmod 600 /etc/slurm/slurm.key
+
+# enable nss_slurm
+sed -i '/^passwd:/ s/passwd:\s*/passwd: slurm /' /etc/nsswitch.conf
+sed -i '/^group:/ s/group:\s*/group: slurm /'  /etc/nsswitch.conf
+
+# setup pam_slurm_adopt
+sed -i '0,/^account/ s/^account/account sufficient pam_access.so\n&/' /etc/pam.d/sshd
+cat >> /etc/security/access.conf <<EOF
++:(lyoko):ALL
+-:ALL:ALL
+EOF
+tac /etc/pam.d/sshd | sed -e '0,/^account/ s/^account/-account required pam_slurm_adopt.so\n&/' | tac > /etc/pam.d/sshd-new && mv /etc/pam.d/sshd-new /etc/pam.d/sshd
