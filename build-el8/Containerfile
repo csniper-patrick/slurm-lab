@@ -45,7 +45,7 @@ COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
 COPY common/proxy.conf /etc/nginx/conf.d/
 
 # Templates
-COPY common/*.j2 common/entrypoint.sh /opt/templates/
+COPY common/*.j2 common/entrypoint.sh /opt/local/
 
 # ansible inventory
 COPY common/ansible.cfg /etc/ansible/ansible.cfg
@@ -67,4 +67,4 @@ RUN create-munge-key \
     && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ \
     && rm -f /etc/systemd/system/systemd-logind.service
 
-ENTRYPOINT [ "/opt/templates/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/local/entrypoint.sh" ]

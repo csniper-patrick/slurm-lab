@@ -25,8 +25,8 @@ useradd -m -g lyoko --shell /bin/bash ulrich
 useradd -m -g lyoko --shell /bin/bash odd
 
 # Install jinja2 and jinja2-cli
-${SYS_PYTHON} -m venv /opt/templates/
-/opt/templates/bin/python3 -m pip install jinja2-cli
+${SYS_PYTHON} -m venv /opt/local/
+/opt/local/bin/python3 -m pip install jinja2-cli
 
 # create auth/slurm key
 dd if=/dev/random of=/etc/slurm/slurm.key bs=1024 count=1

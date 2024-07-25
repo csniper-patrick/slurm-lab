@@ -4,29 +4,29 @@ ENV_ROOT=$(dirname ${0})
 generate_config () {
     # Generate slurmdbd.conf if necessary
     [[ -f /etc/slurm/slurmdbd.conf ]] || ${ENV_ROOT}/bin/jinja2 \
-        -D MYSQL_DATABASE="${MYSQL_DATABASE}" \
-        -D MYSQL_USER="${MYSQL_USER}" \
-        -D MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
         -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
-        -D PRIVATEDATA="${SLURMDB_PRIVATEDATA}" \
-        -D AUTHTYPE="${AUTHTYPE}" \
+        ${MYSQL_DATABASE:+-D MYSQL_DATABASE="${MYSQL_DATABASE}"} \
+        ${MYSQL_USER:+-D MYSQL_USER="${MYSQL_USER}"} \
+        ${MYSQL_PASSWORD:+-D MYSQL_PASSWORD="${MYSQL_PASSWORD}"} \
+        ${SLURMDB_PRIVATEDATA:+-D PRIVATEDATA="${SLURMDB_PRIVATEDATA}"} \
+        ${AUTHTYPE:+-D AUTHTYPE="${AUTHTYPE}"} \
         ${ENV_ROOT}/slurmdbd.conf.j2 > /etc/slurm/slurmdbd.conf
 
     # Generate slurm.conf if necessary
     [[ -f /etc/slurm/slurm.conf ]] || ${ENV_ROOT}/bin/jinja2 \
         -D JWKS=${JWKS:="/etc/slurm/jwks.pub.json"} \
-        -D PRIVATEDATA="${SLURM_PRIVATEDATA}" \
-        -D SLURMCTLDHOST="${SLURMCTLDHOST}" \
-        -D CLUSTERNAME="${CLUSTERNAME}" \
-        -D AUTHTYPE="${AUTHTYPE}" \
+        ${SLURM_PRIVATEDATA:+-D PRIVATEDATA="${SLURM_PRIVATEDATA}"} \
+        ${SLURMCTLDHOST:+-D SLURMCTLDHOST="${SLURMCTLDHOST}"} \
+        ${CLUSTERNAME:+-D CLUSTERNAME="${CLUSTERNAME}"} \
+        ${AUTHTYPE:+-D AUTHTYPE="${AUTHTYPE}"} \
         ${ENV_ROOT}/slurm.conf.j2 > /etc/slurm/slurm.conf
 
     # Generate cgroup.conf if necessary
     [[ -f /etc/slurm/cgroup.conf ]] || ${ENV_ROOT}/bin/jinja2 \
-        -D CGROUP_CONSTRAINCORES="${CGROUP_CONSTRAINCORES}" \
-        -D CGROUP_CONSTRAINDEVICES="${CGROUP_CONSTRAINDEVICES}" \
-        -D CGROUP_CONSTRAINRAMSPACE="${CGROUP_CONSTRAINRAMSPACE}" \
-        -D CGROUP_CONSTRAINSWAPSPACE="${CGROUP_CONSTRAINSWAPSPACE}" \
+        ${CGROUP_CONSTRAINCORES:+-D CGROUP_CONSTRAINCORES="${CGROUP_CONSTRAINCORES}"} \
+        ${CGROUP_CONSTRAINDEVICES:+-D CGROUP_CONSTRAINDEVICES="${CGROUP_CONSTRAINDEVICES}"} \
+        ${CGROUP_CONSTRAINRAMSPACE:+-D CGROUP_CONSTRAINRAMSPACE="${CGROUP_CONSTRAINRAMSPACE}"} \
+        ${CGROUP_CONSTRAINSWAPSPACE:+-D CGROUP_CONSTRAINSWAPSPACE="${CGROUP_CONSTRAINSWAPSPACE}"} \
         ${ENV_ROOT}/cgroup.conf.j2 > /etc/slurm/cgroup.conf
 
     # Generate ansible inventory
