@@ -37,7 +37,7 @@ generate_config () {
 
     # ensure file permission and ownership 
     chown -R slurm:slurm /etc/slurm /var/spool/slurmctld
-    chmod 0600 /etc/slurm/slurmdbd.conf
+    chmod 0600 /etc/slurm/slurmdbd.conf /etc/slurm/slurm.jwks
     
     mkdir -pv /etc/sysconfig/
     [[ -z ${JUPYTER_SPAWNER} ]] || echo "JUPYTER_SPAWNER=${JUPYTER_SPAWNER}" > /etc/sysconfig/jupyter-hub 

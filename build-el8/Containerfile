@@ -5,6 +5,7 @@ WORKDIR /build
 # Artifact will be stored at /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar
 RUN mvn package
 RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
+RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output /slurm.jwks
 
 FROM quay.io/rockylinux/rockylinux:8 as build-slurm
 COPY build-el8/*.sh ./
@@ -36,7 +37,7 @@ COPY common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
 COPY common/service-restart.conf /etc/systemd/system/sackd.service.d/
 COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
 COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
-COPY --from=key-generator /jwks.json /jwks.pub.json /etc/slurm/
+COPY --from=key-generator /jwks.json /jwks.pub.json /slurm.jwks /etc/slurm/
 COPY common/create-account-user.sh /etc/slurm
 
 # Jupyter Hub files
