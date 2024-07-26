@@ -28,11 +28,6 @@ useradd -m -g lyoko --shell /bin/bash odd
 ${SYS_PYTHON} -m venv /opt/local/
 /opt/local/bin/python3 -m pip install jinja2-cli
 
-# create auth/slurm key
-dd if=/dev/random of=/etc/slurm/slurm.key bs=1024 count=1
-chown slurm:slurm /etc/slurm/slurm.key
-chmod 600 /etc/slurm/slurm.key
-
 # enable nss_slurm
 sed -i '/^passwd:/ s/passwd:\s*/passwd: slurm /' /etc/nsswitch.conf
 sed -i '/^group:/ s/group:\s*/group: slurm /'  /etc/nsswitch.conf
