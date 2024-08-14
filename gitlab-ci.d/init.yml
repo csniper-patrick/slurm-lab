@@ -10,7 +10,7 @@ generate-pipeline:
   artifacts:
     when: on_success
     access: all
-    expire_in: "1 days"
+    expire_in: "7 days"
     paths:
       - ${CI_PROJECT_DIR}/gitlab-ci.d/container-build.yml
       - ${CI_PROJECT_DIR}/gitlab-ci.d/container-tag.yml
