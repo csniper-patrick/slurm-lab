@@ -4,6 +4,8 @@
 build-{{ distro }}-amd64-image:
   stage: build
   image: quay.io/podman/stable
+  timeout: 10h
+  retry: 2
   hooks:
     pre_get_sources_script:
       - umask 0022
