@@ -2,8 +2,10 @@ plugin: community.general.nmap
 strict: false
 address: {{ SUBNET }}
 exclude: {{ GATEWAY }}
+open: true
 port: 22, 443, 80, 3306, 6817-6820
 sudo: true
+use_arp_ping: false
 
 groups:
     slurmctld_host:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"
@@ -11,3 +13,4 @@ groups:
     slurmdbd_host:   "ports | selectattr('port', '==', '6819') | selectattr('state', '==', 'open')"
     slurmrestd_host: "ports | selectattr('port', '==', '6820') | selectattr('state', '==', 'open')"
     db_host:         "ports | selectattr('port', '==', '3306') | selectattr('state', '==', 'open')"
+    client_host:     "ports | selectattr('port', '==', '80') | selectattr('state', '==', 'open')"

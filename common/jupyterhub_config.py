@@ -791,29 +791,29 @@ c.JupyterHub.port = 8000
 #    - simple: jupyterhub.spawner.SimpleLocalProcessSpawner
 #  Default: 'jupyterhub.spawner.LocalProcessSpawner'
 
-match os.getenv("JUPYTER_SPAWNER", default="sudo") :
-    case "moss":
-        jupyterhub_moss.set_config(c)
-        output = json.loads(subprocess.check_output("scontrol show partition --json", shell=True))
-        print(output)
-        c.MOSlurmSpawner.partitions = {}
-        for partition in output["partitions"]:
-            c.MOSlurmSpawner.partitions[partition["name"]]={
-                "architecture": os.uname().machine,
-                "description": partition["name"],
-                "simple": True,
-                "jupyter_environments": {
-                    "default": {
-                        "description": "Default",
-                        "path": "/opt/jupyterhub/bin",
-                        "modules": "",
-                        "add_to_path": True,
-                        "prologue": "",
-                    },
+if os.getenv("JUPYTER_SPAWNER", default="sudo") == "moss":
+    jupyterhub_moss.set_config(c)
+    output = json.loads(subprocess.check_output("scontrol show partition --json", shell=True))
+    print(output)
+    c.MOSlurmSpawner.partitions = {}
+    for partition in output["partitions"]:
+        c.MOSlurmSpawner.partitions[partition["name"]]={
+            "architecture": os.uname().machine,
+            "description": partition["name"],
+            "simple": True,
+            "jupyter_environments": {
+                "default": {
+                    "description": "Default",
+                    "path": "/opt/jupyterhub/bin",
+                    "modules": "",
+                    "add_to_path": True,
+                    "prologue": "",
                 },
-            }
-    case default: 
-        c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'
+            },
+        }
+else:
+    c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'
+
 
 # allow cross-origin
 c.Spawner.args = [f'--NotebookApp.allow_origin={"*"}']
@@ -1394,7 +1394,6 @@ c.Authenticator.allowed_users = {
     "jeremie",
     "aelita",
     "yumi",
-    "william",
     "ulrich",
     "odd"
 }

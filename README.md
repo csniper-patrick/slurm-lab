@@ -56,7 +56,7 @@ To develop and build this project locally, you need to clone all the submodules 
    Please refer to the relevant documents for authenticating your request.
    - [Slurm REST API](https://slurm.schedmd.com/rest.html)
    - [API reference](https://slurm.schedmd.com/rest_api.html)
-6. There official document of the exact version of Slurm installed in the container is available at [http://localhost:8080/doc](http://localhost:8080/doc).
+6. There official document of the exact version of Slurm installed in the container is available at [localhost:8080/doc/](http://localhost:8080/doc/) . 
 
 ### Components
 The cluster consists of these components:
@@ -77,4 +77,4 @@ Feature test:
 
 ## Known Issues
 * Jupyter Notebook is not able to use the `module` command in Debian 12 container.
-* ansible inventory `nmap` plugin doesn't work well with debian
+* debian 11 image is not built/released, as slurm debian package can not be built on arm for this debian version. 
