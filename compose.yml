@@ -7,11 +7,11 @@ x-database-volumes: &database-volumes
 
 # choose the image you want to use. 
 # go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
-x-local-image: &local-image
+x-lab-image: &lab-image
   image: docker.io/csniper/slurm-lab:${TAG:-latest}
 
 x-master-container: &master-container
-  <<: *local-image
+  <<: *lab-image
   networks:
     - default
   volumes: *common-volumes
@@ -25,7 +25,7 @@ x-master-container: &master-container
         condition: service_healthy
 
 x-compute-container: &compute-container
-  <<: *local-image
+  <<: *lab-image
   privileged: true
   env_file:
     - ./.env
@@ -43,7 +43,7 @@ x-compute-container: &compute-container
 #   - homedir:/home
 
 # x-lyoko-container: &lyoko-container
-#   <<: *local-image
+#   <<: *lab-image
 #   privileged: true
 #   env_file:
 #     - ./.env-lyoko
@@ -115,10 +115,6 @@ services:
   #   deploy:
   #     mode: replicated
   #     replicas: 1
-  #     resources:
-  #       limits:
-  #         cpus: '2'
-  #         memory: 4G
   #   healthcheck:
   #     test: "systemctl is-active slurmd"
   #   depends_on:
