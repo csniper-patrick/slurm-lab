@@ -26,11 +26,9 @@ dockerhub-{{ tag.name | default("default", true) }}-image:
     - podman tag {{ source_tag }}-arm64 {{ yyyymm_tag }}-arm64-{{ slurm_ver }}
     - podman manifest create {{ latest_tag }} {{ latest_tag }}-amd64 {{ latest_tag }}-arm64
     - podman manifest create {{ yyyymm_tag }} {{ yyyymm_tag }}-amd64 {{ yyyymm_tag }}-arm64
-    - podman manifest create {{ latest_tag }}-{{ slurm_ver }} {{ latest_tag }}-amd64-{{ slurm_ver }} {{ latest_tag }}-arm64-{{ slurm_ver }}
     - podman manifest create {{ yyyymm_tag }}-{{ slurm_ver }} {{ yyyymm_tag }}-amd64-{{ slurm_ver }} {{ yyyymm_tag }}-arm64-{{ slurm_ver }}
     - podman manifest push --all {{ latest_tag }}
     - podman manifest push --all {{ yyyymm_tag }}
-    - podman manifest push --all {{ latest_tag }}-{{ slurm_ver }}
     - podman manifest push --all {{ yyyymm_tag }}-{{ slurm_ver }}
   rules:
     - if: $DOCKER_USERNAME && $DOCKER_TOKEN && $DOCKER_REPO

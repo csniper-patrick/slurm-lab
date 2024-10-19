@@ -4,8 +4,8 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --exclusive
 
-# load hpl
-module load hpl
+# load hpl from module or spack
+module --no-pager load hpl || spack load hpl
 
 # check if runing in a slurm job
 [[ -n ${SLURM_JOBID} ]] || exit 1
@@ -53,4 +53,4 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
 
 which xhpl
 
-mpirun xhpl
+mpirun --bind-to none xhpl
