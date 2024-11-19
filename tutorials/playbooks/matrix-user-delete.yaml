@@ -1,16 +1,17 @@
-- hosts: slurmctld_host,slurmd_host,slurm-lab-client
+- name: Remove matrix user and group
+  hosts: slurmctld_host,slurmd_host,slurm-lab-client
   tasks:
-      - name: ensure user smith, trinity, neo absent
-        user:
-          name: "{{ item }}"
-          state: absent
-          remove: true
-        loop:
-          - smith
-          - trinity
-          - neo
-          
-      - name: ensure group matrix absent
-        group:
-          name: matrix
-          state: absent
+    - name: Ensure user smith, trinity, neo absent
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: absent
+        remove: true
+      loop:
+        - smith
+        - trinity
+        - neo
+
+    - name: Ensure group matrix absent
+      ansible.builtin.group:
+        name: matrix
+        state: absent

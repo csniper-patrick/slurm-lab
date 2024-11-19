@@ -28,7 +28,7 @@ COPY --from=build-mpi /opt/mpich /opt/mpich
 COPY build-deb12/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
-COPY common/ssh_config /etc/skel/.ssh/config
+COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
 RUN ./install-packages.sh && ./config-task.sh
 RUN apt-get -y update && apt-get -y install lmod && apt-get clean

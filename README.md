@@ -74,6 +74,7 @@ Feature test:
   * burst buffer
   * job submission plugin
   * routing partition
+* Slurm's podman integration is work in progress.
 
 ## Known Issues
 * Jupyter Notebook is not able to use the `module` command in Debian 12 container.
