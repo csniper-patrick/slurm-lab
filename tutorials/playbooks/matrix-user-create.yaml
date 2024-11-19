@@ -1,35 +1,38 @@
-- hosts: slurmctld_host,slurmd_host,slurm-lab-client
+- name: Create user smith
+  hosts: slurmctld_host,slurmd_host,slurm-lab-client
   tasks:
-      - name: ensure group matrix exist
-        group:
-          name: matrix
-          
-      - name: ensure user smith exist
-        user:
-          name: smith
-          group: matrix
-          generate_ssh_key: true
+    - name: Ensure group matrix exist
+      ansible.builtin.group:
+        name: matrix
 
-- hosts: slurmctld_host,slurm-lab-client
-  tasks:
-      - name: ensure group matrix exist
-        group:
-          name: matrix
-          
-      - name: ensure user trinity exist
-        user:
-          name: trinity
-          group: matrix
-          generate_ssh_key: true
+    - name: Ensure user smith exist
+      ansible.builtin.user:
+        name: smith
+        group: matrix
+        generate_ssh_key: true
 
-- hosts: slurm-lab-client
+- name: Create user trinity
+  hosts: slurmctld_host,slurm-lab-client
   tasks:
-      - name: ensure group matrix exist
-        group:
-          name: matrix
-          
-      - name: ensure user neo exist
-        user:
-          name: neo
-          group: matrix
-          generate_ssh_key: true
+    - name: Ensure group matrix exist
+      ansible.builtin.group:
+        name: matrix
+
+    - name: Ensure user trinity exist
+      ansible.builtin.user:
+        name: trinity
+        group: matrix
+        generate_ssh_key: true
+
+- name: Create user neo
+  hosts: slurm-lab-client
+  tasks:
+    - name: Ensure group matrix exist
+      ansible.builtin.group:
+        name: matrix
+
+    - name: Ensure user neo exist
+      ansible.builtin.user:
+        name: neo
+        group: matrix
+        generate_ssh_key: true

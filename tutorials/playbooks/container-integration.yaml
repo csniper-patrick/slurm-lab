@@ -1,0 +1,113 @@
+---
+
+- name: Deploy podman and integrated with slurm
+  hosts: slurmctld_host,slurmd_host,client_host
+  tasks:
+    - name: Get list of packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Install podman
+      block:
+
+        - name: Check if podman is installed
+          ansible.builtin.fail:
+            msg: "podman not installed"
+          when: "'podman' not in ansible_facts.packages"
+
+      rescue:
+
+        - name: Remove shadow-utils
+          ansible.builtin.dnf:
+            name: shadow-utils
+            state: absent
+          when: ansible_distribution_file_variety == "RedHat"
+
+        - name: Install podman (dnf)
+          ansible.builtin.dnf:
+            name:
+              - shadow-utils
+              - podman
+              - fuse-overlayfs
+            exclude:
+              - container-selinux
+          when: ansible_distribution_file_variety == "RedHat"
+
+        - name: Install podman (apt)
+          ansible.builtin.apt:
+            name:
+              - podman
+              - fuse-overlayfs
+            update_cache: true
+          when: ansible_distribution_file_variety == "Debian"
+
+    - name: Get list of packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Deploy /etc/slurm/oci.conf (runc)
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/oci-runc.conf"
+        dest: /etc/slurm/oci.conf
+        mode: "0644"
+      when: "'runc' in ansible_facts.packages"
+      notify:
+        - Restart slurmctld
+        - Restart slurmd
+        - Restart sackd
+
+    - name: Deploy /etc/slurm/oci.conf (crun)
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/oci-crun.conf"
+        dest: /etc/slurm/oci.conf
+        mode: "0644"
+      when: "'crun' in ansible_facts.packages"
+      notify:
+        - Restart slurmctld
+        - Restart slurmd
+        - Restart sackd
+
+    - name: Deploy /etc/slurm/scrun.lua
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/scrun.lua"
+        dest: /etc/slurm/scrun.lua
+        mode: "0644"
+      notify:
+        - Restart slurmctld
+        - Restart slurmd
+        - Restart sackd
+
+    - name: Deploy /etc/containers/storage.conf
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/storage.conf"
+        dest: /etc/containers/
+        mode: "0644"
+
+    - name: Deploy podman config files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0644"
+      loop:
+        - src: "{{ playbook_dir }}/files/containers.conf"
+          dest: /etc/containers/
+      when: "'client_host' in group_names"
+
+  handlers:
+    - name: Restart slurmctld
+      ansible.builtin.systemd_service:
+        name: slurmctld
+        state: restarted
+      when: "'slurmctld_host' in group_names"
+
+    - name: Restart slurmd
+      ansible.builtin.systemd_service:
+        name: slurmd
+        state: restarted
+      when: "'slurmd_host' in group_names"
+
+    - name: Restart sackd
+      ansible.builtin.systemd_service:
+        name: sackd
+        state: restarted
+      when: "'client_host' in group_names"

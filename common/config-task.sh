@@ -23,6 +23,11 @@ useradd -m -g lyoko --shell /bin/bash aelita
 useradd -m -g lyoko --shell /bin/bash yumi
 useradd -m -g lyoko --shell /bin/bash ulrich
 useradd -m -g lyoko --shell /bin/bash odd
+loginctl enable-linger jeremie
+loginctl enable-linger aelita
+loginctl enable-linger yumi
+loginctl enable-linger ulrich
+loginctl enable-linger odd
 
 # Install jinja2 and jinja2-cli
 ${SYS_PYTHON} -m venv /opt/local/
@@ -39,3 +44,7 @@ cat >> /etc/security/access.conf <<EOF
 -:ALL:ALL
 EOF
 tac /etc/pam.d/sshd | sed -e '0,/^account/ s/^account/-account required pam_slurm_adopt.so\n&/' | tac > /etc/pam.d/sshd-new && mv /etc/pam.d/sshd-new /etc/pam.d/sshd
+
+# config ssh
+ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -N ""
+cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
