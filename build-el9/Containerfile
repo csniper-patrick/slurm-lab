@@ -65,7 +65,6 @@ COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 RUN create-munge-key \
     && mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
-    && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ \
-    && rm -f /etc/systemd/system/systemd-logind.service 
+    && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ 
 
 ENTRYPOINT [ "/opt/local/entrypoint.sh" ]
