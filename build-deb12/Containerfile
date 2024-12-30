@@ -67,7 +67,6 @@ COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 RUN mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
     && ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target \
-    && rm -vf /etc/systemd/system/multi-user.target.wants/slurmctld.service /etc/systemd/system/multi-user.target.wants/slurmd.service /etc/systemd/system/multi-user.target.wants/slurmdbd.service /etc/systemd/system/multi-user.target.wants/slurmrestd.service /etc/systemd/system/multi-user.target.wants/nginx.service /etc/systemd/system/multi-user.target.wants/sackd.service /etc/systemd/system/multi-user.target.wants/jupyter-hub.service \
-    && rm -f /etc/systemd/system/systemd-logind.service
+    && rm -vf /etc/systemd/system/multi-user.target.wants/slurmctld.service /etc/systemd/system/multi-user.target.wants/slurmd.service /etc/systemd/system/multi-user.target.wants/slurmdbd.service /etc/systemd/system/multi-user.target.wants/slurmrestd.service /etc/systemd/system/multi-user.target.wants/nginx.service /etc/systemd/system/multi-user.target.wants/sackd.service /etc/systemd/system/multi-user.target.wants/jupyter-hub.service 
 
 ENTRYPOINT [ "/opt/local/entrypoint.sh" ]

@@ -29,8 +29,8 @@
               - shadow-utils
               - podman
               - fuse-overlayfs
-            exclude:
-              - container-selinux
+            # exclude:
+            #   - container-selinux
           when: ansible_distribution_file_variety == "RedHat"
 
         - name: Install podman (apt)

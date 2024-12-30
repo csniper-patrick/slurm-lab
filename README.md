@@ -56,7 +56,7 @@ To develop and build this project locally, you need to clone all the submodules 
    Please refer to the relevant documents for authenticating your request.
    - [Slurm REST API](https://slurm.schedmd.com/rest.html)
    - [API reference](https://slurm.schedmd.com/rest_api.html)
-6. There official document of the exact version of Slurm installed in the container is available at [localhost:8080/doc/](http://localhost:8080/doc/) . 
+6. The official document of the exact version of Slurm installed in the container is available at [localhost:8080/doc/](http://localhost:8080/doc/) . 
 
 ### Components
 The cluster consists of these components:
@@ -67,6 +67,21 @@ The cluster consists of these components:
 ```
 podman compose up -d --scale compute=6 --no-recreate
 ```
+
+## `.env` options
+### MySQL variables
+You can change the following MySQL variables in `.env` file. Note that these variables are required.
+* `MYSQL_PASSWORD`
+* `MYSQL_USER`
+* `MYSQL_DATABASE`
+* `MYSQL_RANDOM_ROOT_PASSWORD`
+
+### AuthType plugin option
+You can choose between `auth/munge`(default) or `auth/slurm` to authenticating the cluster.
+By setting variable `AUTHTYPE=auth/slurm` you can start a slurm cluster that doesn't require munge daemon. 
+
+### Use `jupyter_moss` spawner
+By default the jupyter lab session is spawned in the slurm-lab-client container. If you want to start the jupyter lab session as a slurm job and run in a compute container instead, you can switch the [JupyterHub MOdular Slurm Spawner (moss)](https://github.com/silx-kit/jupyterhub_moss) by setting `JUPYTER_SPAWNER=moss`.
 
 ## TODO/Wishlist
 Feature test:
