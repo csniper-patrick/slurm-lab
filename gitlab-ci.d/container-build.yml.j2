@@ -27,7 +27,7 @@ build-{{ distro }}-arm64-image:
   script:
   - ( podman pull {{ tag }}-arm64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push {{ tag }}-arm64 )
   tags:
-    - arm64
+    - saas-linux-small-arm64
 
 
 {% endfor %}
