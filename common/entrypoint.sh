@@ -47,13 +47,13 @@ generate_config () {
 enable_services () {
     HOSTNAME=$(hostname)
     # enable slurmdbd and slurmrestd if necessary
-    ( grep -E "^(DbdHost|DbdBackupHost)=" /etc/slurm/slurmdbd.conf | cut -d"=" -f2 | grep -q ${HOSTNAME} ) && ln -s /usr/lib/systemd/system/{slurmdbd,slurmrestd}.service /etc/systemd/system/multi-user.target.wants/
+    ( grep -E "^(DbdHost|DbdBackupHost)=" /etc/slurm/slurmdbd.conf | cut -d"=" -f2 | grep -q ${HOSTNAME} ) && ln -sf /usr/lib/systemd/system/{slurmdbd,slurmrestd}.service /etc/systemd/system/multi-user.target.wants/
     # enable slurmctld if necessary
-    ( grep -E "^SlurmctldHost=" /etc/slurm/slurm.conf | cut -d"=" -f2 | grep -q ${HOSTNAME} ) && ln -s /usr/lib/systemd/system/slurmctld.service /etc/systemd/system/multi-user.target.wants/
+    ( grep -E "^SlurmctldHost=" /etc/slurm/slurm.conf | cut -d"=" -f2 | grep -q ${HOSTNAME} ) && ln -sf /usr/lib/systemd/system/slurmctld.service /etc/systemd/system/multi-user.target.wants/
     # enable sackd if necessary
-    [[ ${HOSTNAME} =~ ^slurm-lab-client.*$ ]] && ln -s /usr/lib/systemd/system/{nginx,jupyter-hub,sackd}.service /etc/systemd/system/multi-user.target.wants/
+    [[ ${HOSTNAME} =~ ^slurm-lab-client.*$ ]] && ln -sf /usr/lib/systemd/system/{nginx,jupyter-hub,sackd}.service /etc/systemd/system/multi-user.target.wants/
     # enable slurmd if necessary
-    [[ ${HOSTNAME} =~ ^slurm-lab.*$ ]] || ln -s /usr/lib/systemd/system/slurmd.service /etc/systemd/system/multi-user.target.wants/
+    [[ ${HOSTNAME} =~ ^slurm-lab.*$ ]] || ln -sf /usr/lib/systemd/system/slurmd.service /etc/systemd/system/multi-user.target.wants/
 }
 
 generate_config && enable_services

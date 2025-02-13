@@ -5,7 +5,7 @@
 #SBATCH --exclusive
 
 # load hpl from module or spack
-module --no-pager load hpl || spack load hpl
+module load hpl || spack load hpl
 
 # check if runing in a slurm job
 [[ -n ${SLURM_JOBID} ]] || exit 1
