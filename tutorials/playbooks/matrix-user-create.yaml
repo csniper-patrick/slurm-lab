@@ -10,6 +10,7 @@
         name: smith
         group: matrix
         generate_ssh_key: true
+        shell: /bin/bash
 
 - name: Create user trinity
   hosts: slurmctld_host,slurm-lab-client
@@ -23,6 +24,7 @@
         name: trinity
         group: matrix
         generate_ssh_key: true
+        shell: /bin/bash
 
 - name: Create user neo
   hosts: slurm-lab-client
@@ -36,3 +38,4 @@
         name: neo
         group: matrix
         generate_ssh_key: true
+        shell: /bin/bash
