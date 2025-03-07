@@ -1,6 +1,6 @@
 #!/bin/bash -x
 apt-get -y update
-apt-get -y install fakeroot devscripts git wget munge libmunge-dev mariadb-server mariadb-client libmariadb-dev libhttp-parser2.9 libhttp-parser-dev libjson-c5 libjson-c-dev libyaml-0-2 libyaml-dev libjwt0 libjwt-dev openssl libssl-dev wget curl bzip2 build-essential python3 libpmix-bin libpmix-dev libpmix2 systemd dpkg-dev vim gfortran libsysfs2 libsysfs-dev pkg-config lua5.4 lua5.4-dev libucx0 libucx-dev ucx-utils
+apt-get -y install fakeroot devscripts git wget munge libmunge-dev mariadb-server mariadb-client libmariadb-dev libhttp-parser2.9 libhttp-parser-dev libjson-c5 libjson-c-dev libyaml-0-2 libyaml-dev libjwt0 libjwt-dev openssl libssl-dev wget curl bzip2 build-essential python3 libpmix-bin libpmix-dev libpmix2 systemd dpkg-dev vim gfortran libsysfs2 libsysfs-dev pkg-config lua5.4 lua5.4-dev libucx0 libucx-dev ucx-utils software-properties-common
 
 # install nvml
 [[ $(uname -m) == x86_64 ]] && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
@@ -8,9 +8,9 @@ apt-get -y install fakeroot devscripts git wget munge libmunge-dev mariadb-serve
 dpkg -i cuda-keyring_1.1-1_all.deb
 add-apt-repository contrib
 apt-get update
-apt-get -y install cuda-nvml-dev-12-6
-export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-12.6) ${CPPFLAGS}"
-export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-12.6) ${LDFLAGS}"
+apt-get -y install cuda-nvml-dev-12-8
+export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-12.8) ${CPPFLAGS}"
+export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-12.8) ${LDFLAGS}"
 
 cd slurm-src
 yes | mk-build-deps -i debian/control
