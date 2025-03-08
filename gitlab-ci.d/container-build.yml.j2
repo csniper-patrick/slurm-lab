@@ -3,7 +3,7 @@
 {%- set containerfile = "build-" + distro + "/Containerfile" -%}
 build-{{ distro }}-amd64-image:
   stage: build
-  image: quay.io/podman/stable
+  image: quay.io/podman/stable:v5.3.0
   timeout: 10h
   retry: 2
   hooks:
@@ -16,7 +16,7 @@ build-{{ distro }}-amd64-image:
 
 build-{{ distro }}-arm64-image:
   stage: build
-  image: quay.io/podman/stable
+  image: quay.io/podman/stable:v5.3.0
   timeout: 10h
   retry: 2
   hooks:
