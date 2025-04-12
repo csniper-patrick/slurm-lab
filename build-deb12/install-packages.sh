@@ -2,7 +2,7 @@
 
 # Install slurm
 apt-get -y update
-apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sackd,sview,doc,dev,libpmi0,libpmi2-0,libnss-slurm,libpam-slurm-adopt} gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2 autotools-dev autoconf libtool xauth hostname htop lmod rsync btop iotop software-properties-common
+apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sackd,sview,doc,dev,libpmi0,libpmi2-0,libnss-slurm,libpam-slurm-adopt} gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2 autotools-dev autoconf libtool xauth hostname htop lmod rsync btop iotop software-properties-common chrony
 
 # install jupyterhub
 apt-get -y install python3 python3-{pip,dev,venv} libpython3-{dev,stdlib}
