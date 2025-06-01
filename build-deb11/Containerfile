@@ -15,21 +15,22 @@ RUN ./build-slurm-deb.sh
 FROM docker.io/library/debian:11 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
-COPY mpich ./mpich-src
-COPY build-deb12/install-packages.sh common/mpich-build.sh ./
+COPY ompi ./ompi-src
+COPY build-deb12/install-packages.sh common/openmpi-build.sh ./
 RUN ./install-packages.sh
-RUN ./mpich-build.sh
+RUN ./openmpi-build.sh
 
 
 FROM docker.io/library/debian:11
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
-COPY --from=build-mpi /opt/mpich /opt/mpich
+COPY --from=build-mpi /opt/openmpi /opt/openmpi
 COPY build-deb12/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
 COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf
 COPY common/auto-ssh-keygen.sh /etc/profile.d/
+COPY common/packages.yaml /etc/skel/.spack/packages.yaml 
 RUN ./install-packages.sh && ./config-task.sh
 RUN apt-get -y update && apt-get -y install lmod && apt-get clean
 
