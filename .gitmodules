@@ -4,6 +4,6 @@
 [submodule "json-web-key-generator"]
 	path = json-web-key-generator
 	url = https://github.com/bspk/json-web-key-generator.git
-[submodule "mpich"]
-	path = mpich
-	url = https://github.com/pmodels/mpich
+[submodule "ompi"]
+	path = ompi
+	url = https://github.com/open-mpi/ompi.git

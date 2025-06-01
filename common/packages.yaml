@@ -1,0 +1,11 @@
+packages:
+  openmpi:
+    externals:
+      - spec: "openmpi@4.1.8"
+        prefix: /opt/openmpi
+    buildable: False
+  slurm:
+    externals:
+      - spec: "slurm@25.05.0"
+        prefix: /usr
+    buildable: False
