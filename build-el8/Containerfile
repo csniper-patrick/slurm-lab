@@ -20,10 +20,18 @@ COPY build-el8/install-packages.sh common/openmpi-build.sh ./
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
 
+FROM docker.io/library/python:3.12 as build-moss
+COPY jupyterhub_moss /opt/jupyterhub_moss
+COPY common/batch_script.sh.j2 /opt/jupyterhub_moss/jupyterhub_moss/batch_script.sh
+WORKDIR /opt/jupyterhub_moss
+RUN pip install build setuptools setuptools_scm wheel
+RUN python -m build --wheel --no-isolation --outdir /opt/jupyterhub_moss /opt/jupyterhub_moss 
+
 FROM quay.io/rockylinux/rockylinux:8
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY --from=build-moss /opt/jupyterhub_moss/jupyterhub_moss-*-py3-none-any.whl /opt/
 COPY build-el8/install-packages.sh common/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
