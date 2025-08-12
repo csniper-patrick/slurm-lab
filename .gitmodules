@@ -7,3 +7,6 @@
 [submodule "ompi"]
 	path = ompi
 	url = https://github.com/open-mpi/ompi.git
+[submodule "jupyterhub_moss"]
+	path = jupyterhub_moss
+	url = https://github.com/silx-kit/jupyterhub_moss
