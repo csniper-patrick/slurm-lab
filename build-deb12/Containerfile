@@ -1,80 +1,108 @@
-FROM docker.io/library/maven:3.8.7-openjdk-18-slim AS key-generator
-COPY json-web-key-generator /build
-WORKDIR /build
-# Build the app
-# Artifact will be stored at /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar
-RUN mvn package
-RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output /jwks.json --pubKeyOutput /jwks.pub.json
-RUN java -jar /build/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output /slurm.jwks
-
+# Stage 1: Build Slurm from source
+# This stage builds Slurm Debian packages from the source code.
 FROM docker.io/library/debian:12 as build-slurm
+# Copy the build scripts and Slurm source code
 COPY build-deb12/*.sh ./
 COPY slurm ./slurm-src
+# Run the build script to create Debian packages
 RUN ./build-slurm-deb.sh
 
+# Stage 2: Build Open MPI from source
+# This stage builds Open MPI, which is required for running MPI jobs with Slurm.
 FROM docker.io/library/debian:12 as build-mpi
+# Copy the Slurm repository created in the previous stage
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
+# Copy the Open MPI source code and build scripts
 COPY ompi ./ompi-src
-COPY build-deb12/install-packages.sh common/openmpi-build.sh ./
+COPY build-deb12/install-packages.sh common/scripts/openmpi-build.sh ./
+# Install build dependencies and build Open MPI
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
 
+# Stage 3: Build JupyterHub Moss Spawner
+# This stage builds the jupyterhub-moss wheel.
 FROM docker.io/library/python:3.12 as build-moss
+# Copy the jupyterhub-moss source code
 COPY jupyterhub_moss /opt/jupyterhub_moss
-COPY common/batch_script.sh.j2 /opt/jupyterhub_moss/jupyterhub_moss/batch_script.sh
+COPY common/templates/batch_script.sh.j2 /opt/jupyterhub_moss/jupyterhub_moss/batch_script.sh
 WORKDIR /opt/jupyterhub_moss
+# Install build dependencies
 RUN pip install build setuptools setuptools_scm wheel
+# Build the wheel
 RUN python -m build --wheel --no-isolation --outdir /opt/jupyterhub_moss /opt/jupyterhub_moss 
 
+# Final Stage: Create the production image
 FROM docker.io/library/debian:12
+
+# Copy artifacts from previous build stages
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
 COPY --from=build-moss /opt/jupyterhub_moss/jupyterhub_moss-*-py3-none-any.whl /opt/
-COPY build-deb12/install-packages.sh common/config-task.sh ./
+COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
+
+# Copy scripts and configurations for user environment
+COPY build-deb12/install-packages.sh common/scripts/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
 COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf
-COPY common/auto-ssh-keygen.sh /etc/profile.d/
+COPY common/scripts/auto-ssh-keygen.sh /etc/profile.d/
 COPY common/packages.yaml /etc/skel/.spack/packages.yaml 
+
+# Install packages and run initial configuration
 RUN ./install-packages.sh && ./config-task.sh
 RUN apt-get -y update && apt-get -y install lmod && apt-get clean
 
-# slurm related files
-COPY common/service-restart.conf /etc/systemd/system/slurmctld.service.d/
-COPY common/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
-COPY common/service-restart.conf /etc/systemd/system/sackd.service.d/
-COPY common/slurmd-extra.conf common/service-restart.conf /etc/systemd/system/slurmd.service.d/
-COPY common/slurmrestd-extra.conf common/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
-COPY --from=key-generator /jwks.json /jwks.pub.json /slurm.jwks /etc/slurm/
-COPY common/create-account-user.sh /etc/slurm
+# --- Configure Slurm ---
+# Copy systemd service files and configurations for Slurm components
+COPY common/systemd/service-restart.conf /etc/systemd/system/slurmctld.service.d/
+COPY common/systemd/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
+COPY common/systemd/service-restart.conf /etc/systemd/system/sackd.service.d/
+COPY common/systemd/slurmd-extra.conf common/systemd/service-restart.conf /etc/systemd/system/slurmd.service.d/
+COPY common/systemd/slurmrestd-extra.conf common/systemd/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+# Copy Slurm JWT keys and other secrets
+COPY common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks /etc/slurm/
+# Copy helper scripts
+COPY common/scripts/create-account-user.sh /etc/slurm
 
-# Jupyter Hub files
+# --- Configure JupyterHub ---
+# Copy JupyterHub configuration and service files
 COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
-COPY common/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+COPY common/systemd/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+COPY common/systemd/jupyter-hub.service /etc/systemd/system/
+# Copy Nginx proxy configuration for JupyterHub
 COPY common/proxy.conf /etc/nginx/sites-available/default
+# Copy JupyterLab default settings
+COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
 
-# Templates
-COPY common/*.j2 common/entrypoint.sh /opt/local/
-
-# ansible inventory
+# --- Configure Ansible ---
 COPY common/ansible.cfg /etc/ansible/ansible.cfg
 RUN mkdir -pv /etc/ansible/inventory
 
-# custom services
-COPY common/jupyter-hub.service /etc/systemd/system/
-
-# others
+# --- Other Configurations ---
+# Copy templates and entrypoint script
+COPY common/templates/*.j2 common/scripts/entrypoint.sh /opt/local/
+# Copy sudoers configuration
 COPY common/lyoko.sudo /etc/sudoers.d/lyoko
+# Copy environment module files
 COPY common/modules /opt/modules
-COPY common/module-path.sh /etc/profile.d/z99-module-path.sh
-COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
-COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
+# Add module path to shell profile
+COPY common/scripts/module-path.sh /etc/profile.d/z99-module-path.sh
 
+# --- Final setup ---
+# Create Slurm spool directories, set default systemd target, and disable default services.
+# Services will be enabled by the entrypoint script based on the role of the container.
 RUN mkdir -pv /var/spool/slurmctld \
     && mkdir -pv /var/spool/slurmd \
     && ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target \
-    && rm -vf /etc/systemd/system/multi-user.target.wants/slurmctld.service /etc/systemd/system/multi-user.target.wants/slurmd.service /etc/systemd/system/multi-user.target.wants/slurmdbd.service /etc/systemd/system/multi-user.target.wants/slurmrestd.service /etc/systemd/system/multi-user.target.wants/nginx.service /etc/systemd/system/multi-user.target.wants/sackd.service /etc/systemd/system/multi-user.target.wants/jupyter-hub.service 
+    && rm -vf /etc/systemd/system/multi-user.target.wants/slurmctld.service \
+       /etc/systemd/system/multi-user.target.wants/slurmd.service \
+       /etc/systemd/system/multi-user.target.wants/slurmdbd.service \
+       /etc/systemd/system/multi-user.target.wants/slurmrestd.service \
+       /etc/systemd/system/multi-user.target.wants/nginx.service \
+       /etc/systemd/system/multi-user.target.wants/sackd.service \
+       /etc/systemd/system/multi-user.target.wants/jupyter-hub.service
 
+# Set the entrypoint for the container
 ENTRYPOINT [ "/opt/local/entrypoint.sh" ]

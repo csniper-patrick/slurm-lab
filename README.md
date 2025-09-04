@@ -1,97 +1,178 @@
 # Slurm Lab
-This project aims to provide an easy way to set up a Slurm cluster environment on your personal computer for testing, learning, and development purposes. 
 
-## Getting started
+This project provides an easy way to set up a complete Slurm cluster environment on your personal computer using containers. It's perfect for testing, learning, and development purposes.
 
-### Prerequisite
+[Slurm](https://slurm.schedmd.com/) is an open-source, fault-tolerant, and highly scalable cluster management and job scheduling system for Linux clusters.
 
-Install and set up Podman Desktop or Docker Desktop on your computer.
-- [Podman Installation Instructions](https://podman.io/docs/installation)
-- [Docker Installation Instructions](https://docs.docker.com/desktop/install/mac-install/)
+## Features
 
-Make sure you have enabled `podman compose` or `podman-compose` as well.
+*   **Complete Cluster Environment**: Sets up a multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
+*   **JupyterHub Integration**: Includes a JupyterHub instance on the client node for an interactive environment.
+*   **Slurm REST API**: The Slurm REST API (`slurmrestd`) is enabled for programmatic access to the cluster.
+*   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12).
+*   **Flexible Authentication**: Choose between `auth/munge` (default) and `auth/slurm` for cluster authentication.
+*   **Customizable**: Easily configured through a `.env` file.
+*   **Federation & Multi Cluster**: Supports federated and multi-cluster environment can be enable but simply uncomment the relevant section in `compose.yml`.
+*   **Scalable**: Compute nodes can be scaled up or down on the fly.
 
-### Quick start
-The images built from this project are published to [Docker hub - csniper/slurm-lab](https://hub.docker.com/r/csniper/slurm-lab). You could start your slurm-lab container cluster following these simple steps. 
+## Cluster Components
+
+The cluster consists of the following services, defined in the `compose.yml` file:
+
+1.  **`controller`**: Runs the Slurm control daemon (`slurmctld`). A second controller `controller2` is also available for high-availability testing.
+2.  **`slurmdbd`**: Runs the Slurm Database Daemon (`slurmdbd`) for accounting.
+3.  **`mariadb`**: A MariaDB database server for Slurm accounting.
+4.  **`client`**: A submission node that also hosts JupyterHub and `slurmrestd`. This is your main entry point for interacting with the cluster.
+5.  **`compute`**: N (default 4) compute nodes running the `slurmd` daemon.
+
+## Getting Started
+
+### Prerequisites
+
+You need a container engine that supports the Compose specification. The recommended setup is **Podman** with **Docker Compose**.
+
+-   **Recommended:**
+    -   [Podman](https://podman.io/docs/installation)
+    -   [Docker Compose](https://docs.docker.com/compose/install/) (can be used with Podman)
+    -   [Setting Podman to use Docker-compose](https://podman-desktop.io/docs/compose/setting-up-compose)
+    -   *Optional:* [Podman Desktop](https://podman-desktop.io/docs/installation) for a graphical interface.
+
+-   **Alternatives:**
+    -   [Docker Desktop](https://docs.docker.com/desktop/) (includes Docker and Docker Compose).
+    -   [Podman Compose](https://github.com/containers/podman-compose#installation) (less recommended due to container dependency issues).
+
+### Quick Start (Using Pre-built Images)
+
+This is the fastest way to get your Slurm lab running using images from [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab).
+
+1.  **Clone the project:**
+    ```sh
+    git clone https://gitlab.com/CSniper/slurm-lab.git
+    cd slurm-lab
+    ```
+
+2.  **Start the cluster:**
+    ```sh
+    podman compose up -d
+    ```
+    *(Use `docker-compose` if you are using Docker).*
+
+3.  **Select an image tag (Optional):**
+    By default, the cluster uses the `latest` tag (Rocky Linux 9). You can use a different image by specifying the `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
+
+    For example, to use the Debian-based image, add this line to your `.env` file:
+    ```
+    TAG=latest-deb
+    ```
+
+### Local Development (Building from Source)
+
+If you want to modify the project or build the container images locally, follow these steps.
+
+1.  **Prepare the project (clone with submodules):**
+    If you are cloning the project for the first time:
+    ```sh
+    git clone --recurse-submodules https://gitlab.com/CSniper/slurm-lab.git
+    cd slurm-lab
+    ```
+    If you have already cloned the project without submodules:
+    ```sh
+    cd slurm-lab
+    git submodule update --init --recursive
+    ```
+2.  **Create keys required for the build:**
+    ```bash
+    mkdir -pv common/secrets
+    podman run --rm -it \
+        -v ./json-web-key-generator:/json-web-key-generator \
+        -v ./common/secrets:/opt \
+        -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
+        docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
+    ```
+3.  **Build and start the cluster:**
+    Use the `compose.dev.yml` file, which is configured to build the images from the local source code.
+    ```sh
+    podman compose -f compose.dev.yml up -d --build
+    ```
+
+## Usage
+
+### Accessing JupyterHub
+
+Once the cluster is running, you can access the JupyterHub environment at [http://localhost:8080/](http://localhost:8080/).
+
+You can log in with one of the following usernames (no password needed): `jeremie`, `aelita`, `yumi`, `ulrich`, `odd`.
+*(These are characters from the show [Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko)).*
+
+### Submitting a Slurm Job
+
+You can submit jobs from the terminal within JupyterHub or by using `podman exec`.
+
+**Example using `srun`:**
+```sh
+podman exec -it slurm-lab-client-1 srun --nodes=1 --ntasks=1 hostname
 ```
-git clone https://gitlab.com/CSniper/slurm-lab.git
-cd slurm-lab
-podman compose up -d
+
+**Example using `sbatch`:**
+Create a batch script `my_job.sh`:
+```sh
+#!/bin/bash
+#SBATCH --job-name=my_test_job
+#SBATCH --output=my_job_%j.out
+#SBATCH --error=my_job_%j.err
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=1
+
+srun hostname
 ```
-If you want to run your lab using other available images, check out the list of available tags [here](https://hub.docker.com/r/csniper/slurm-lab/tags). Then specify the tag you want to use in file `.env`.  
-eg. specify tag latest-deb to use Debian-based image. 
-```
-TAG=latest-deb
+Submit the job from the client container:
+```sh
+podman cp my_job.sh slurm-lab-client-1:/tmp/my_job.sh
+podman exec -it slurm-lab-client-1 sbatch /tmp/my_job.sh
 ```
 
-### Develop and build the project locally
-To develop and build this project locally, you need to clone all the submodules and use compose file `compose.dev.yml` instead. 
+### Scaling Compute Nodes
 
-1. Prepare the project
-   If you clone the project from scratch:
-      ```
-      git clone --recurse-submodules https://gitlab.com/CSniper/slurm-lab.git
-      cd slurm-lab
-      ```
-   If you've cloned the project already without submodules:
-      ```
-      cd slurm-lab
-      git submodule update --init --recursive
-      ```
-2. build the container image
-   ```
-   podman build --tag slurm-lab:el9 -f build-el9/Containerfile .
-   ```
-   or
-   ```
-   podman compose -f compose.dev.yml build
-   ```
-3. Starting the container cluster
-   ```
-   podman compose -f compose.dev.yml up -d 
-   ```
-4. Start playing around in your local web browser. If you go to [localhost:8080](http://localhost:8080/). You can use one of these accounts to log in the Jupyter hub environment: jeremie, aelita, yumi, ulrich, odd ( [If you wonder who are they: Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko) ). No password.
-5. You can access and explore the Slurm REST API as well.
-   The json web keyset location is specified by `AuthAltParameters` in `slurm.conf`
-   Please refer to the relevant documents for authenticating your request.
-   - [Slurm REST API](https://slurm.schedmd.com/rest.html)
-   - [API reference](https://slurm.schedmd.com/rest_api.html)
-6. The official document of the exact version of Slurm installed in the container is available at [localhost:8080/doc/](http://localhost:8080/doc/) . 
-
-### Components
-The cluster consists of these components:
-1. 2 master container running slurm control daemon (slurmctld) and Slurm accounting daemon (slurmdbd)
-2. 1 mariadb container, serving database for slurm accounting. 
-3. 1 client container, configured as submission node, hosting Jupyter hub and slurmrestd as well. 
-4. N (default 4) compute container running slurmd. You can scale it up in runtime. eg.:
-```
+You can easily change the number of active compute nodes. For example, to scale up to 6 nodes:
+```sh
 podman compose up -d --scale compute=6 --no-recreate
 ```
 
-## `.env` options
-### MySQL variables
-You can change the following MySQL variables in `.env` file. Note that these variables are required.
-* `MYSQL_PASSWORD`
-* `MYSQL_USER`
-* `MYSQL_DATABASE`
-* `MYSQL_RANDOM_ROOT_PASSWORD`
+### Accessing the Slurm REST API
 
-### AuthType plugin option
-You can choose between `auth/munge`(default) or `auth/slurm` to authenticating the cluster.
-By setting variable `AUTHTYPE=auth/slurm` you can start a slurm cluster that doesn't require munge daemon. 
+The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.43` (the exact version may differ).
 
-### Use `jupyter_moss` spawner
-By default the jupyter lab session is spawned in the slurm-lab-client container. If you want to start the jupyter lab session as a slurm job and run in a compute container instead, you can switch the [JupyterHub MOdular Slurm Spawner (moss)](https://github.com/silx-kit/jupyterhub_moss) by setting `JUPYTER_SPAWNER=moss`.
+Please refer to the official documentation for authenticating your requests and for API usage:
+-   [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
+-   [API Reference](https://slurm.schedmd.com/rest_api.html)
 
-## TODO/Wishlist
-Feature test:
-* Lua script:
-  * burst buffer
-  * job submission plugin
-  * routing partition
-* Slurm's podman integration is work in progress.
-* strigger
+### Slurm Documentation
+
+The official documentation for the version of Slurm installed in the container is available at [http://localhost:8080/doc/](http://localhost:8080/doc/).
+
+## Configuration
+
+You can customize the cluster by setting variables in the `.env` file.
+
+*   `TAG`: The Docker image tag to use (e.g., `latest`, `latest-deb`). See available tags on [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab/tags).
+*   `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_RANDOM_ROOT_PASSWORD`: Required credentials for the MariaDB database.
+*   `AUTHTYPE`: The Slurm authentication plugin. Can be `auth/munge` (default) or `auth/slurm`. Setting it to `auth/slurm` removes the need for the `munge` daemon.
+*   `JUPYTER_SPAWNER`: By default, JupyterLab sessions are spawned inside the `client` container. Set this to `moss` to use the [JupyterHub MOdular Slurm Spawner (moss)](https://github.com/silx-kit/jupyterhub_moss), which runs each JupyterLab session as a Slurm job on a compute node.
 
 ## Known Issues
-* Jupyter Notebook is not able to use the `module` command in Debian 12 container.
-* debian 11 image is not built/released, as slurm debian package can not be built on arm for this debian version. 
+
+*   The `module` command is not available in Jupyter Notebooks running on the Debian 12-based image.
+*   The Debian 11 image is not currently built or released, as the Slurm Debian packages cannot be built on ARM for this version.
+
+## Roadmap
+
+*   Feature testing for Lua scripts (burst buffer, job submission plugins, routing).
+*   Explore Slurm's Podman integration.
+
+## Contributing
+
+Contributions are welcome! Please feel free to open an issue or submit a merge request on [GitLab](https://gitlab.com/CSniper/slurm-lab).
+
+## License
+
+This project is licensed under the [BSD 3-Clause License](./LICENSE).

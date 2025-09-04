@@ -1,9 +1,26 @@
+generate-secrets:
+  stage: build
+  image: docker.io/library/maven:3.8.7-openjdk-18-slim
+  script:
+    - cd ${CI_PROJECT_DIR}/json-web-key-generator
+    - mvn package
+    - cd ${CI_PROJECT_DIR}
+    - mkdir -p ${CI_PROJECT_DIR}/common/secrets
+    - java -jar ${CI_PROJECT_DIR}/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/jwks.json --pubKeyOutput ${CI_PROJECT_DIR}/common/secrets/jwks.pub.json
+    - java -jar ${CI_PROJECT_DIR}/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/slurm.jwks
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: "7 days"
+    paths:
+      - ${CI_PROJECT_DIR}/common/secrets/*
+
 {% for distro in distros %}
 {%- set tag = "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-" + distro + "-" + slurm_ver -%}
 {%- set containerfile = "build-" + distro + "/Containerfile" -%}
 build-{{ distro }}-amd64-image:
   stage: build
-  image: quay.io/podman/stable:v5.3.0
+  image: quay.io/podman/stable:latest
   timeout: 10h
   retry: 2
   hooks:
@@ -12,11 +29,22 @@ build-{{ distro }}-amd64-image:
   before_script:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
-  - ( podman pull {{ tag }}-amd64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-amd64 . && podman push {{ tag }}-amd64 )
+    - ( podman pull {{ tag }}-amd64 ) || ( podman build --jobs=0 --squash -f {{ containerfile }} -t {{ tag }}-amd64 . && podman push --retry=5 {{ tag }}-amd64 )
+    - CONTAINERID=$( podman create {{ tag }}-amd64 )
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-amd64/
+    - podman cp ${CONTAINERID}:/opt/slurm-repo/. ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-amd64/
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: "1 days"
+    paths:
+      - ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-amd64/
+  needs:
+    - job: generate-secrets
 
 build-{{ distro }}-arm64-image:
   stage: build
-  image: quay.io/podman/stable:v5.3.0
+  image: quay.io/podman/stable:latest
   timeout: 10h
   retry: 2
   hooks:
@@ -25,9 +53,140 @@ build-{{ distro }}-arm64-image:
   before_script:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
-  - ( podman pull {{ tag }}-arm64 ) || ( podman build --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push {{ tag }}-arm64 )
+    - ( podman pull {{ tag }}-arm64 ) || ( podman build --jobs=0 --squash -f {{ containerfile }} -t {{ tag }}-arm64 . && podman push --retry=5 {{ tag }}-arm64 )
+    - CONTAINERID=$( podman create {{ tag }}-arm64 )
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-arm64/
+    - podman cp ${CONTAINERID}:/opt/slurm-repo/. ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-arm64/
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: "1 days"
+    paths:
+      - ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-arm64/
   tags:
     - saas-linux-small-arm64
+  needs:
+    - job: generate-secrets
 
+tag-{{ distro }}-multi-arch-image:
+  stage: build
+  image: quay.io/podman/stable:latest
+  timeout: 10h
+  retry: 2
+  hooks:
+    pre_get_sources_script:
+      - umask 0022
+  before_script:
+    - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
+  script:
+    - podman pull {{ tag }}-amd64 {{ tag }}-arm64
+    - podman manifest create {{ tag }} {{ tag }}-amd64 {{ tag }}-arm64
+    - podman manifest push --all {{ tag }}
+  needs:
+    - job: build-{{ distro }}-arm64-image
+    - job: build-{{ distro }}-amd64-image
+
+{% endfor %}
+
+rpm-publish:
+  stage: build
+  image: quay.io/rockylinux/rockylinux:9
+  timeout: 10h
+  retry: 2
+  script:
+    - dnf -y install yum-utils rpm-build epel-release createrepo_c
+    - dnf config-manager --enable crb
+    - full_ver=$(grep "Version:" slurm/slurm.spec | head -n 1 | awk '{print $2}' | cut -d. -f-3 ) 
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo/Packages
+    - find ${CI_PROJECT_DIR}/slurm-repo-* -iname '*.rpm' -exec mv {} ${CI_PROJECT_DIR}/slurm-repo/Packages/ \;
+    - createrepo ${CI_PROJECT_DIR}/slurm-repo
+    - |
+      cat > ${CI_PROJECT_DIR}/slurm-repo/slurm.repo <<EOF
+      [slurm]
+      name=slurm local repository
+      baseurl=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/rpm/
+      gpgcheck=0
+      enabled=1
+      EOF
+    - cd ${CI_PROJECT_DIR}/slurm-repo
+    - |
+      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -i curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/rpm/{}
+  needs:
+{% for distro in distros if distro.startswith('el') %}
+    - job: build-{{ distro }}-arm64-image
+    - job: build-{{ distro }}-amd64-image
+{% endfor %}
+
+deb-publish:
+  stage: build
+  image: docker.io/library/debian:12
+  timeout: 10h
+  retry: 2
+  script:
+    - apt-get -y update
+    - apt-get -y install dpkg-dev software-properties-common curl 
+    - full_ver=$(grep "Version:" slurm/slurm.spec | head -n 1 | awk '{print $2}' | cut -d. -f-3 ) 
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo/
+    - cd ${CI_PROJECT_DIR}/slurm-repo/
+    - find ${CI_PROJECT_DIR}/slurm-repo-* -iname '*.deb' -exec mv {} ${CI_PROJECT_DIR}/slurm-repo/ \;
+    - |
+      dpkg-scanpackages . /dev/null > Release 
+      dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+    - |
+      cat > ${CI_PROJECT_DIR}/slurm-repo/slurm.list <<EOF
+      deb [trusted=yes] ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/deb/ stable main
+      EOF
+    - |
+      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -i curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/deb/{}
+  needs:
+{% for distro in distros if distro.startswith('deb') %}
+    - job: build-{{ distro }}-arm64-image
+    - job: build-{{ distro }}-amd64-image
+{% endfor %}
+
+.image-testing: &image-testing
+  stage: build
+  timeout: 1h
+  image: registry.gitlab.com/csniper/ci-mgmt/podman-compose:latest
+  before_script:
+    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - podman system service -t 0 &
+  script:
+    - podman compose up -d --quiet-pull && sleep 90
+    - podman compose exec master-1 timeout 10m systemctl status munge slurmdbd slurmctld 
+    - podman compose exec master-2 timeout 10m systemctl status munge slurmdbd slurmctld 
+    - podman compose exec client timeout 10m sinfo --long
+    - podman compose exec client timeout 10m scontrol show config
+    #- podman compose exec client timeout 10m sbatch --wait --time 00:01:00 /etc/skel/tutorials/helloworld.sh
+    - podman compose exec master-lyoko timeout 10m systemctl status munge slurmctld 
+    - podman compose exec master-lyoko timeout 10m sinfo --long
+    - podman compose exec master-lyoko timeout 10m scontrol show config
+    #- podman compose exec master-lyoko timeout 10m sbatch --wait --time 00:01:00 /etc/skel/tutorials/helloworld.sh
+    - podman compose down
+    - podman volume prune -f
+  rules:
+    - if: $VERIFY_IMAGE == 'true'
+
+{% for distro in distros %}
+{%- set tag = "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-" + distro + "-" + slurm_ver -%}
+test-{{ distro }}-amd64:
+  <<: *image-testing
+  variables:
+    IMAGE_TAG: {{ tag }}
+    COMPOSE_FILE: compose.ci.yml
+  needs:
+    - job: tag-{{ distro }}-multi-arch-image
+  resource_group: image-testing-amd64
+
+test-{{ distro }}-arm64:
+  <<: *image-testing
+  variables:
+    IMAGE_TAG: {{ tag }}
+    COMPOSE_FILE: compose.ci.yml
+  tags:
+    - saas-linux-small-arm64
+  needs:
+    - job: tag-{{ distro }}-multi-arch-image
+  resource_group: image-testing-arm64
 
 {% endfor %}

@@ -1,6 +1,8 @@
 generate-pipeline:
   stage: init
   image: docker.io/library/python:3.12
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
   script: 
     - python -m pip install jinja2-cli
     - slurm_ver=$(grep "Version:" slurm/slurm.spec | head -n 1 | awk '{print $2}' | cut -d. -f-2 )

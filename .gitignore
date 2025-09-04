@@ -1,1 +1,3 @@
 .vscode/*
+.ansible/*
+common/secrets/**
