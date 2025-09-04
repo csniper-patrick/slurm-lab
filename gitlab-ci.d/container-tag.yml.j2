@@ -9,7 +9,7 @@
 {% endif %}
 dockerhub-{{ tag.name | default("default", true) }}-image:
   stage: deploy
-  image: quay.io/podman/stable:v5.3.0
+  image: quay.io/podman/stable:latest
   before_script:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
     - podman login -u "${DOCKER_USERNAME}" -p "${DOCKER_TOKEN}" docker.io

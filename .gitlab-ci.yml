@@ -1,27 +1,37 @@
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  # GIT_SUBMODULE_STRATEGY: recursive
+  VERIFY_IMAGE:
+    value: 'true'
+    options:
+      - 'true'
+      - 'false'
+    description: Control if image should be verified at build stage
 
 cache: []
 
 stages:
   - init
-  - test
   - build
+  - test
   - deploy
 
 include:
   - local: 'gitlab-ci.d/test.yml'
   - local: 'gitlab-ci.d/init.yml'
 
-build:
+build-images:
   stage: build
   trigger:
     include:
       - artifact: gitlab-ci.d/container-build.yml
         job: generate-pipeline
     strategy: depend
+  variables:
+    VERIFY_IMAGE: ${VERIFY_IMAGE}
+    GIT_SUBMODULE_STRATEGY: recursive
   rules:
     - if: $CI_COMMIT_REF_PROTECTED == 'true'
+    - if: $CI_PIPELINE_SOURCE == 'web'
 
 tag:
   stage: deploy

@@ -7,9 +7,9 @@ dnf -y install munge munge-devel mariadb mariadb-devel gtk2 gtk2-devel gtk3 gtk3
 [[ $(uname -m) == x86_64 ]] && dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
 [[ $(uname -m) == aarch64 ]] && dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo
 dnf clean all
-dnf install -y cuda-nvml-devel-12-8
-export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-12.8) ${CPPFLAGS}"
-export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-12.8) ${LDFLAGS}"
+dnf install -y cuda-nvml-devel-13-0
+export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-13.0) ${CPPFLAGS}"
+export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-13.0) ${LDFLAGS}"
 
 ver=$(grep "Version:" slurm-src/slurm.spec | head -n 1 | awk '{print $2}' )
 rel=$(grep "%define rel" slurm-src/slurm.spec | head -n 1 | awk '{print $3}')

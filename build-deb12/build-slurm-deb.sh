@@ -8,9 +8,9 @@ apt-get -y install fakeroot devscripts git wget munge libmunge-dev mariadb-serve
 dpkg -i cuda-keyring_1.1-1_all.deb
 add-apt-repository contrib
 apt-get update
-apt-get -y install cuda-nvml-dev-12-8
-export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-12.8) ${CPPFLAGS}"
-export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-12.8) ${LDFLAGS}"
+apt-get -y install cuda-nvml-dev-13-0
+export CPPFLAGS="$(pkg-config --cflags-only-I --keep-system-cflags nvidia-ml-13.0) ${CPPFLAGS}"
+export LDFLAGS="$(pkg-config --libs-only-L --keep-system-libs nvidia-ml-13.0) ${LDFLAGS}"
 
 cd slurm-src
 yes | mk-build-deps -i debian/control

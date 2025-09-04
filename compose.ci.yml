@@ -1,0 +1,114 @@
+x-common-volumes: &common-volumes
+  - spool-slurmctld:/var/spool/slurmctld
+  - homedir:/home
+
+# choose the image you want to use. 
+# go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
+x-lab-image: &lab-image
+  image: ${IMAGE_TAG}
+  uts: "private"
+  # cgroup: "host"
+  cap_add:
+    - ALL
+
+x-master-container: &master-container
+  <<: *lab-image
+  networks:
+    - default
+  volumes: *common-volumes
+  privileged: true
+  env_file:
+    - ./.env
+  depends_on:
+    acct-db:
+      condition: service_started
+
+x-compute-container: &compute-container
+  <<: *lab-image
+  privileged: true
+  env_file:
+    - ./.env
+  networks:
+    - default
+  volumes: *common-volumes
+  depends_on:
+    master-1:
+      condition: service_started
+    master-2:
+      condition: service_started
+
+# Uncomment the following templates for second cluster
+x-lyoko-volumes: &lyoko-volumes
+  - homedir:/home
+
+x-lyoko-container: &lyoko-container
+  <<: *lab-image
+  privileged: true
+  env_file:
+    - ./.env-lyoko
+  networks:
+    - default
+  volumes: *lyoko-volumes
+
+volumes:
+  spool-slurmctld:
+    external: false
+  homedir:
+    external: false
+  slurm_acct_db:
+    external: false
+
+services:
+  acct-db:
+    image: mariadb:lts
+    container_name: slurm-lab-db-1
+    hostname: slurm-lab-db-1
+    uts: "private"
+    env_file:
+      - ./.env
+  
+  master-1:
+    <<: *master-container
+    container_name: slurm-lab-master-1
+    hostname: slurm-lab-master-1
+
+  master-2:
+    <<: *master-container
+    container_name: slurm-lab-master-2
+    hostname: slurm-lab-master-2
+    
+  # compute:
+  #   <<: *compute-container
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+
+  client:
+    <<: *compute-container
+    container_name: slurm-lab-client
+    hostname: slurm-lab-client
+    ports:
+      - "8080:80"
+      
+  # Uncomment the following templates for second cluster
+  master-lyoko:
+    <<: *lyoko-container
+    container_name: slurm-lab-master-lyoko
+    hostname: slurm-lab-master-lyoko
+    depends_on:
+      master-1:
+        condition: service_started
+      master-2:
+        condition: service_started
+
+  # compute-lyoko:
+  #   <<: *lyoko-container
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   depends_on:
+  #     master-lyoko:
+  #       condition: service_started
+
+networks:
+  default: {}
