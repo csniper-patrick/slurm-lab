@@ -20,18 +20,6 @@ COPY build-deb12/install-packages.sh common/scripts/openmpi-build.sh ./
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
 
-# Stage 3: Build JupyterHub Moss Spawner
-# This stage builds the jupyterhub-moss wheel.
-FROM docker.io/library/python:3.12 as build-moss
-# Copy the jupyterhub-moss source code
-COPY jupyterhub_moss /opt/jupyterhub_moss
-COPY common/templates/batch_script.sh.j2 /opt/jupyterhub_moss/jupyterhub_moss/batch_script.sh
-WORKDIR /opt/jupyterhub_moss
-# Install build dependencies
-RUN pip install build setuptools setuptools_scm wheel
-# Build the wheel
-RUN python -m build --wheel --no-isolation --outdir /opt/jupyterhub_moss /opt/jupyterhub_moss 
-
 # Final Stage: Create the production image
 FROM docker.io/library/debian:12
 
@@ -39,7 +27,6 @@ FROM docker.io/library/debian:12
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
-COPY --from=build-moss /opt/jupyterhub_moss/jupyterhub_moss-*-py3-none-any.whl /opt/
 COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 
 # Copy scripts and configurations for user environment

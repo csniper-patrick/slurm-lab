@@ -1,5 +1,4 @@
 variables:
-  # GIT_SUBMODULE_STRATEGY: recursive
   VERIFY_IMAGE:
     value: 'true'
     options:
@@ -11,6 +10,7 @@ cache: []
 
 stages:
   - init
+  - review
   - build
   - test
   - deploy
@@ -18,6 +18,9 @@ stages:
 include:
   - local: 'gitlab-ci.d/test.yml'
   - local: 'gitlab-ci.d/init.yml'
+  - project: 'CSniper/ci-mgmt'
+    file: 'code-review.yml'
+    ref: 'main'
 
 build-images:
   stage: build
