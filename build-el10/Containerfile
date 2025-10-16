@@ -1,27 +1,27 @@
 # Stage 1: Build Slurm from source
 # This stage builds Slurm RPM packages from the source code.
-FROM quay.io/rockylinux/rockylinux:9 as build-slurm
+FROM quay.io/rockylinux/rockylinux:10 as build-slurm
 # Copy the build scripts and Slurm source code
-COPY build-el9/*.sh ./
+COPY build-el10/*.sh ./
 COPY slurm ./slurm-src
 # Run the build script to create RPM packages
 RUN ./build-slurm-rpm.sh
 
 # Stage 2: Build Open MPI from source
 # This stage builds Open MPI, which is required for running MPI jobs with Slurm.
-FROM quay.io/rockylinux/rockylinux:9 as build-mpi
+FROM quay.io/rockylinux/rockylinux:10 as build-mpi
 # Copy the Slurm repository created in the previous stage
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 # Copy the Open MPI source code and build scripts
 COPY ompi ./ompi-src
-COPY build-el9/install-packages.sh common/scripts/openmpi-build.sh ./
+COPY build-el10/install-packages.sh common/scripts/openmpi-build.sh ./
 # Install build dependencies and build Open MPI
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
 
 # Final Stage: Create the production image
-FROM quay.io/rockylinux/rockylinux:9
+FROM quay.io/rockylinux/rockylinux:10
 
 # Copy artifacts from previous build stages
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
@@ -30,7 +30,7 @@ COPY --from=build-mpi /opt/openmpi /opt/openmpi
 COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
 
 # Copy scripts and configurations for user environment
-COPY build-el9/install-packages.sh common/scripts/config-task.sh ./
+COPY build-el10/install-packages.sh common/scripts/config-task.sh ./
 COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
 COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf

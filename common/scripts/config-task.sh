@@ -10,7 +10,7 @@ ${SYS_PYTHON} -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install wheel
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub jupyterlab bash_kernel
 /opt/jupyterhub/bin/python3 -m pip install ipywidgets jupyterlab-slurm sudospawner
-/opt/jupyterhub/bin/python3 -m pip install /opt/jupyterhub_moss-*.whl
+/opt/jupyterhub/bin/python3 -m pip install jupyterhub-moss>=10.0.0
 /opt/jupyterhub/bin/python3 -m bash_kernel.install
 npm install -g only-allow
 npm install -g configurable-http-proxy

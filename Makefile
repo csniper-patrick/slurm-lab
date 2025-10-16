@@ -8,26 +8,26 @@ endif
 
 # Default distributions to build.
 # Can be overridden from the command line, e.g.:
-# make build DISTROS="el8 deb12"
-DISTROS ?= el8 el9 deb12
+DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containerfile 2>/dev/null)))
 
 # JWT key files that need to be generated.
 SECRET_FILES = common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks
 
-.PHONY: all build clean prune
+.PHONY: all build clean prune $(DISTROS)
 .DEFAULT_GOAL := all
 
 # Build all specified distro images.
 # To build in parallel, run: make -j<number_of_jobs> build
 all: build
 
-build: $(patsubst %, image-%, $(DISTROS))
+# Build images for each distribution.
+build: $(DISTROS)
 
 # A rule to build a single distro image.
 # Depends on the JWT key files being present.
-image-%: $(SECRET_FILES)
-	@echo "Building slurm-lab:$*" image...
-	@$(PODMAN) build --jobs=0 --pull=newer -t slurm-lab:$* --squash -f build-$*/Containerfile .
+$(DISTROS): $(SECRET_FILES)
+	@echo "Building slurm-lab:$@" image...
+	@$(PODMAN) build --jobs=0 --pull=newer -t slurm-lab:$@ --squash -f build-$@/Containerfile .
 
 # A rule to generate JWT key files if they don't exist.
 $(SECRET_FILES): | common/secrets
