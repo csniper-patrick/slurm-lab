@@ -140,7 +140,7 @@ podman compose up -d --scale compute=6 --no-recreate
 
 ### Accessing the Slurm REST API
 
-The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.43` (the exact version may differ).
+The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.44` (the exact version may differ).
 
 Please refer to the official documentation for authenticating your requests and for API usage:
 -   [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
