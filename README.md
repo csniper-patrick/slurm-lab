@@ -95,6 +95,17 @@ If you want to modify the project or build the container images locally, follow 
     podman compose -f compose.dev.yml up -d --build
     ```
 
+## Makefile
+
+This project includes a `Makefile` that simplifies building images and managing the development environment.
+
+*   **`make build`**: Build all container images for the available distributions (e.g., `el8`, `el9`, `deb12`). This is the default target.
+*   **`make <distro>`**: Build a specific image, e.g., `make el9`.
+*   **`make clean`**: Removes generated files, including JWT keys.
+*   **`make prune`**: Prunes unused container images.
+
+The `Makefile` will automatically generate the required JWT keys if they are not present.
+
 ## Usage
 
 ### Accessing JupyterHub
@@ -149,6 +160,17 @@ Please refer to the official documentation for authenticating your requests and 
 ### Slurm Documentation
 
 The official documentation for the version of Slurm installed in the container is available at [http://localhost:8080/doc/](http://localhost:8080/doc/).
+
+## Tutorials
+
+This project includes a set of tutorials in the `tutorials/` directory to help you get started with Slurm and the lab environment. You can access them through the JupyterHub interface.
+
+*   **`Getting Started.ipynb`**: A good starting point for new users.
+*   **`Admin Guide.ipynb`**: Covers administrative tasks and cluster setup.
+*   **`MPI Guide.ipynb`**: Demonstrates how to run MPI jobs.
+*   **`REST API Guide.ipynb`**: Shows how to interact with the Slurm REST API.
+*   **`scrontab Guide.ipynb`**: Explains how to use `scrontab` for scheduling recurring jobs.
+*   **`Multi-Cluster & Federation.ipynb`**: A guide to setting up and using the multi-cluster and federation features.
 
 ## Configuration
 
