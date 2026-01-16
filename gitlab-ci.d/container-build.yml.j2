@@ -93,6 +93,7 @@ rpm-publish:
   image: quay.io/rockylinux/rockylinux:9
   timeout: 10h
   retry: 2
+  allow_failure: true
   script:
     - dnf -y install yum-utils rpm-build epel-release createrepo_c
     - dnf config-manager --enable crb
@@ -122,6 +123,7 @@ deb-publish:
   image: docker.io/library/debian:12
   timeout: 10h
   retry: 2
+  allow_failure: true
   script:
     - apt-get -y update
     - apt-get -y install dpkg-dev software-properties-common curl 
