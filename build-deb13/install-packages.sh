@@ -2,7 +2,7 @@
 
 # Install slurm
 apt-get -y update
-apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sackd,sview,doc,dev,libpmi0,libpmi2-0,libnss-slurm,libpam-slurm-adopt} gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2 autotools-dev autoconf libtool xauth hostname htop lmod rsync btop iotop chrony munge libmunge-dev flex libpmix-bin libpmix-dev libpmix2
+apt-get -y install build-essential slurm-smd-{client,slurmd,slurmctld,slurmdbd,slurmrestd,sackd,sview,doc,dev,libpmi0,libpmi2-0,libnss-slurm,libpam-slurm-adopt} gfortran hwloc openssh-server systemd systemd-sysv cron systemd tmux vim wget git openssh-* libsysfs2 autotools-dev autoconf libtool xauth hostname htop lmod rsync btop iotop chrony munge libmunge-dev flex libpmix-bin libpmix-dev libpmix2t64
 
 # install jupyterhub
 apt-get -y install python3 python3-{pip,dev,venv} libpython3-{dev,stdlib}
@@ -12,7 +12,7 @@ apt-get -y install nodejs npm
 apt-get -y install nginx
 
 # install extra packages
-apt-get -y install tmux sudo vim man ansible nmap iproute2 less
+apt-get -y install tmux sudo vim man ansible nmap wget iproute2 less
 
 # update all & clean apt
 apt-get -y upgrade
