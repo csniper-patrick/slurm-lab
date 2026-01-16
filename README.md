@@ -9,7 +9,7 @@ This project provides an easy way to set up a complete Slurm cluster environment
 *   **Complete Cluster Environment**: Sets up a multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
 *   **JupyterHub Integration**: Includes a JupyterHub instance on the client node for an interactive environment.
 *   **Slurm REST API**: The Slurm REST API (`slurmrestd`) is enabled for programmatic access to the cluster.
-*   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12).
+*   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12/13).
 *   **Flexible Authentication**: Choose between `auth/munge` (default) and `auth/slurm` for cluster authentication.
 *   **Customizable**: Easily configured through a `.env` file.
 *   **Federation & Multi Cluster**: Supports federated and multi-cluster environment can be enable but simply uncomment the relevant section in `compose.yml`.
@@ -99,7 +99,7 @@ If you want to modify the project or build the container images locally, follow 
 
 This project includes a `Makefile` that simplifies building images and managing the development environment.
 
-*   **`make build`**: Build all container images for the available distributions (e.g., `el8`, `el9`, `deb12`). This is the default target.
+*   **`make build`**: Build all container images for the available distributions (e.g., `el8`, `el9`, `deb12`, `deb13`). This is the default target.
 *   **`make <distro>`**: Build a specific image, e.g., `make el9`.
 *   **`make clean`**: Removes generated files, including JWT keys.
 *   **`make prune`**: Prunes unused container images.
@@ -183,8 +183,9 @@ You can customize the cluster by setting variables in the `.env` file.
 
 ## Known Issues
 
-*   The `module` command is not available in Jupyter Notebooks running on the Debian 12-based image.
-*   The Debian 11 image is not currently built or released, as the Slurm Debian packages cannot be built on ARM for this version.
+*   The `module` command is not available in Jupyter Notebooks running on the Debian based image.
+*   Rocky 10 image couldn't be build until rpm spec is updated to use `llhttp` instead of `http-parser`. [Replace http-parser dependency with llhttp](https://support.schedmd.com/show_bug.cgi?id=21801)
+*   Debian 13 image doesn't have slurm plugin for jupyterhub, due to python version. 
 
 ## Roadmap
 

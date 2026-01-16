@@ -1,0 +1,55 @@
+---
+- name: Enable Slurm Metrics Collection
+  hosts: slurmctld_host,slurmd_host,slurm-lab-client
+  tasks:
+    # - name: Update slurmdbd.conf
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/slurm/slurmdbd.conf
+    #     backup: true
+    #     backrefs: true
+    #     regexp: "PrivateData=(.*)"
+    #     line: "#PrivateData=\\1"
+    #   when: "'slurmctld_host' in group_names"
+    #   notify:
+    #     - Restart slurmdbd
+
+    - name: Update slurm.conf
+      ansible.builtin.lineinfile:
+        path: /etc/slurm/slurm.conf
+        backup: true
+        backrefs: "{{ 'regexp' is in item }}"
+        regexp: "{{ item.regexp | default(omit) }}"
+        line: "{{ item.line }}"
+      notify:
+        - Restart slurmctld
+        - Restart slurmd
+        - Restart sackd
+      loop:
+        - regexp: "PrivateData=(.*)"
+          line: "#PrivateData=\\1"
+        - line: "MetricsType=metrics/openmetrics"
+
+  handlers:
+    - name: Restart slurmdbd
+      ansible.builtin.systemd_service:
+        name: slurmdbd
+        state: restarted
+      when: "'slurmctld_host' in group_names"
+
+    - name: Restart slurmctld
+      ansible.builtin.systemd_service:
+        name: slurmctld
+        state: restarted
+      when: "'slurmctld_host' in group_names"
+
+    - name: Restart slurmd
+      ansible.builtin.systemd_service:
+        name: slurmd
+        state: restarted
+      when: "'slurmd_host' in group_names"
+
+    - name: Restart sackd
+      ansible.builtin.systemd_service:
+        name: sackd
+        state: restarted
+      when: "'client_host' in group_names"

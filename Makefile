@@ -13,7 +13,7 @@ DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containe
 # JWT key files that need to be generated.
 SECRET_FILES = common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks
 
-.PHONY: all build clean prune $(DISTROS)
+.PHONY: all build clean prune $(DISTROS) up dev down
 .DEFAULT_GOAL := all
 
 # Build all specified distro images.
@@ -44,8 +44,22 @@ common/secrets:
 
 # Prune unused container images.
 prune:
-	@echo "Pruning images..."
+	@echo "Pruning images and volume..."
+	@$(PODMAN) compose down --volumes --remove-orphans
 	@$(PODMAN) image prune -f
+
+# Start/stop slurm-lab stack using compose.
+up:
+	@echo "Starting slurm-lab stack..."
+	@$(PODMAN) compose up -d --remove-orphans --force-recreate
+
+dev:
+	@echo "Starting slurm-lab stack (localhost)..."
+	@$(PODMAN) compose -f compose.dev.yml up -d --remove-orphans --force-recreate
+
+down:
+	@echo "Stopping slurm-lab stack..."
+	@$(PODMAN) compose down --remove-orphans
 
 # Clean up generated files.
 clean:

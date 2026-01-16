@@ -1,0 +1,95 @@
+# Stage 1: Build Slurm from source
+# This stage builds Slurm Debian packages from the source code.
+FROM docker.io/library/debian:13 as build-slurm
+# Copy the build scripts and Slurm source code
+COPY build-deb13/*.sh ./
+COPY slurm ./slurm-src
+# Run the build script to create Debian packages
+RUN ./build-slurm-deb.sh
+
+# Stage 2: Build Open MPI from source
+# This stage builds Open MPI, which is required for running MPI jobs with Slurm.
+FROM docker.io/library/debian:13 as build-mpi
+# Copy the Slurm repository created in the previous stage
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
+# Copy the Open MPI source code and build scripts
+COPY ompi ./ompi-src
+COPY build-deb13/install-packages.sh common/scripts/openmpi-build.sh ./
+# Install build dependencies and build Open MPI
+RUN ./install-packages.sh
+RUN ./openmpi-build.sh
+
+# Final Stage: Create the production image
+FROM docker.io/library/debian:13
+
+# Copy artifacts from previous build stages
+COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
+COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
+COPY --from=build-mpi /opt/openmpi /opt/openmpi
+COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
+
+# Copy scripts and configurations for user environment
+COPY build-deb13/install-packages.sh common/scripts/config-task.sh ./
+COPY tutorials /etc/skel/tutorials
+COPY common/.tmux.conf LICENSE /etc/skel/
+COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf
+COPY common/scripts/auto-ssh-keygen.sh /etc/profile.d/
+COPY common/packages.yaml /etc/skel/.spack/packages.yaml 
+
+# Install packages and run initial configuration
+RUN ./install-packages.sh && ./config-task.sh
+RUN apt-get -y update && apt-get -y install lmod && apt-get clean
+
+# --- Configure Slurm ---
+# Copy systemd service files and configurations for Slurm components
+COPY common/systemd/service-restart.conf /etc/systemd/system/slurmctld.service.d/
+COPY common/systemd/service-restart.conf /etc/systemd/system/slurmdbd.service.d/
+COPY common/systemd/service-restart.conf /etc/systemd/system/sackd.service.d/
+COPY common/systemd/slurmd-extra.conf common/systemd/service-restart.conf /etc/systemd/system/slurmd.service.d/
+COPY common/systemd/slurmrestd-extra.conf common/systemd/service-restart.conf /etc/systemd/system/slurmrestd.service.d/
+# Copy Slurm JWT keys and other secrets
+COPY common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks /etc/slurm/
+# Copy helper scripts
+COPY common/scripts/create-account-user.sh /etc/slurm
+
+# --- Configure JupyterHub ---
+# Copy JupyterHub configuration and service files
+COPY common/jupyterhub_config.py /opt/jupyterhub/etc/jupyterhub/
+COPY common/systemd/service-restart.conf /etc/systemd/system/jupyter-hub.service.d/
+COPY common/systemd/jupyter-hub.service /etc/systemd/system/
+# Copy Nginx proxy configuration for JupyterHub
+COPY common/proxy.conf /etc/nginx/sites-available/default
+# Copy JupyterLab default settings
+COPY common/jupyter-settings-overrides.json /opt/jupyterhub/share/jupyter/lab/settings/overrides.json
+
+# --- Configure Ansible ---
+COPY common/ansible.cfg /etc/ansible/ansible.cfg
+RUN mkdir -pv /etc/ansible/inventory
+
+# --- Other Configurations ---
+# Copy templates and entrypoint script
+COPY common/templates/*.j2 common/scripts/entrypoint.sh /opt/local/
+# Copy sudoers configuration
+COPY common/lyoko.sudo /etc/sudoers.d/lyoko
+# Copy environment module files
+COPY common/modules /opt/modules
+# Add module path to shell profile
+COPY common/scripts/module-path.sh /etc/profile.d/z99-module-path.sh
+
+# --- Final setup ---
+# Create Slurm spool directories, set default systemd target, and disable default services.
+# Services will be enabled by the entrypoint script based on the role of the container.
+RUN mkdir -pv /var/spool/slurmctld \
+    && mkdir -pv /var/spool/slurmd \
+    && ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target \
+    && rm -vf /etc/systemd/system/multi-user.target.wants/slurmctld.service \
+       /etc/systemd/system/multi-user.target.wants/slurmd.service \
+       /etc/systemd/system/multi-user.target.wants/slurmdbd.service \
+       /etc/systemd/system/multi-user.target.wants/slurmrestd.service \
+       /etc/systemd/system/multi-user.target.wants/nginx.service \
+       /etc/systemd/system/multi-user.target.wants/sackd.service \
+       /etc/systemd/system/multi-user.target.wants/jupyter-hub.service
+
+# Set the entrypoint for the container
+ENTRYPOINT [ "/opt/local/entrypoint.sh" ]

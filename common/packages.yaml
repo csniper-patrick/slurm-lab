@@ -6,6 +6,6 @@ packages:
     buildable: False
   slurm:
     externals:
-      - spec: "slurm@25.11.1"
+      - spec: "slurm@25.11.2"
         prefix: /usr
     buildable: False
