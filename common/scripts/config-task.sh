@@ -10,7 +10,7 @@ ${SYS_PYTHON} -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install wheel
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub jupyterlab bash_kernel
 /opt/jupyterhub/bin/python3 -m pip install ipywidgets sudospawner
-/opt/jupyterhub/bin/python3 -m pip install jupyterlab-slurm
+/opt/jupyterhub/bin/python3 -m pip install jupyterlab-slurm || /opt/jupyterhub/bin/python3 -m pip install git+https://github.com/NERSC/jupyterlab-slurm.git
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub-moss>=10.0.0
 /opt/jupyterhub/bin/python3 -m bash_kernel.install
 npm install -g only-allow
