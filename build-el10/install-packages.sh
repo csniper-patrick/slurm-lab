@@ -3,17 +3,18 @@
 # Install slurm
 dnf install -y yum-utils epel-release
 dnf config-manager --enable crb
-dnf install -y slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which autoconf automake libtool xorg-x11-xauth hostname htop Lmod rsync btop iotop chrony munge munge-devel pmix pmix-devel  llhttp llhttp-devel
+dnf -y --enablerepo=rocky-9-baseos,rocky-9-appstream,rocky-9-crb,rocky-9-epel install http-parser http-parser-devel libjwt libjwt-devel
+dnf -y install slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which autoconf automake libtool xorg-x11-xauth hostname htop Lmod rsync btop iotop chrony munge munge-devel pmix pmix-devel
 
 # install jupyterhub
 dnf -y install python3.12 python3.12-pip python3.12-devel
-dnf -y module install nodejs:20
+dnf -y install nodejs
 
 # install nginx
-dnf -y module install nginx:1.24
+dnf -y install nginx
 
 # install extra packages
-dnf -y install tmux sudo vim man ansible iproute nmap wget 
+dnf -y install tmux sudo vim man ansible-core iproute nmap wget 
 
 # update all and clear yum cache
 dnf -y update

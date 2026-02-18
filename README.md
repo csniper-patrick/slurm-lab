@@ -184,8 +184,10 @@ You can customize the cluster by setting variables in the `.env` file.
 ## Known Issues
 
 *   The `module` command is not available in Jupyter Notebooks running on the Debian based image.
-*   Rocky 10 image couldn't be build until rpm spec is updated to use `llhttp` instead of `http-parser`. [Replace http-parser dependency with llhttp](https://support.schedmd.com/show_bug.cgi?id=21801)
-*   Debian 13 image doesn't have slurm plugin for jupyterhub, due to python version. 
+*   Rocky 10 image is built but with ugly workaround.
+    *   The `http-parser` dependency has not been updated to `llhttp` (see [Replace http-parser dependency with llhttp](https://support.schedmd.com/show_bug.cgi?id=21801))
+    *   The `libjwt` shipped in Rocky 10 made `jwt_Base64encode` private, causing symbol lookup error.
+    *   The image is built by snatching `http-parser`, `http-parser-devel`, `libjwt`, and `libjwt-devel` package from the rocky 9 repository. Hence, I will not make the el10 image the default for el yet, hopefully these issue are resolved soon.
 
 ## Roadmap
 

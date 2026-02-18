@@ -1,0 +1,44 @@
+[rocky-9-baseos]
+name=Rocky Linux 9 - BaseOS
+mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-9$rltype
+#baseurl=http://dl.rockylinux.org/$contentdir/9/BaseOS/$basearch/os/
+gpgcheck=0
+enabled=0
+countme=1
+metadata_expire=6h
+includepkgs=http-parser http-parser-devel libjwt libjwt-devel
+priority=10
+
+[rocky-9-appstream]
+name=Rocky Linux 9 - AppStream
+mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStream-9$rltype
+#baseurl=http://dl.rockylinux.org/$contentdir/9/AppStream/$basearch/os/
+gpgcheck=0
+enabled=0
+countme=1
+metadata_expire=6h
+includepkgs=http-parser http-parser-devel libjwt libjwt-devel
+priority=10
+
+[rocky-9-crb]
+name=Rocky Linux 9 - CRB
+mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=CRB-9$rltype
+#baseurl=http://dl.rockylinux.org/$contentdir/9/CRB/$basearch/os/
+gpgcheck=0
+enabled=0
+countme=1
+metadata_expire=6h
+includepkgs=http-parser http-parser-devel libjwt libjwt-devel
+priority=10
+
+[rocky-9-epel]
+name=Extra Packages for Enterprise Linux 9 - $basearch
+# It is much more secure to use the metalink, but if you wish to use a local mirror
+# place its address here.
+#baseurl=https://download.example/pub/epel/9/Everything/$basearch/
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-9&arch=$basearch&infra=$infra&content=$contentdir
+enabled=0
+gpgcheck=0
+countme=1
+includepkgs=http-parser http-parser-devel libjwt libjwt-devel
+priority=10
