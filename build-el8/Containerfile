@@ -79,8 +79,9 @@ COPY common/scripts/module-path.sh /etc/profile.d/z99-module-path.sh
 # --- Final setup ---
 # Create munge key, Slurm spool directories, and enable munge service. 
 RUN create-munge-key \
-    && mkdir -pv /var/spool/slurmctld \
-    && mkdir -pv /var/spool/slurmd \
+    && mkdir -pv /etc/munge /var/log/munge /var/run/munge /var/spool/slurmctld /var/spool/slurmd /var/log/slurm/ \
+    && chown -R munge:munge /etc/munge /var/log/munge /var/run/munge \
+    && chown -R slurm:slurm /var/spool/slurmctld /var/spool/slurmd /var/log/slurm/ \
     && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ 
 
 # Set the entrypoint for the container

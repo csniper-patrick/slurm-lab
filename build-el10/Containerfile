@@ -1,9 +1,17 @@
+# Stage 0: get http-paser package from el9
+FROM quay.io/rockylinux/rockylinux:9 as el9-package
+RUN dnf -y install yum-utils epel-release \
+    && dnf config-manager --enable crb \
+    && dnf -y install --downloadonly --downloaddir=/ http-parser http-parser-devel 
+
 # Stage 1: Build Slurm from source
 # This stage builds Slurm RPM packages from the source code.
 FROM quay.io/rockylinux/rockylinux:10 as build-slurm
 # Copy the build scripts and Slurm source code
 COPY build-el10/*.sh ./
 COPY slurm ./slurm-src
+COPY --from=el9-package /http-parser*.rpm ./
+RUN dnf -y install /http-parser*.rpm
 # Run the build script to create RPM packages
 RUN ./build-slurm-rpm.sh
 
@@ -16,6 +24,8 @@ COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 # Copy the Open MPI source code and build scripts
 COPY ompi ./ompi-src
 COPY build-el10/install-packages.sh common/scripts/openmpi-build.sh ./
+COPY --from=el9-package /http-parser*.rpm ./
+RUN dnf -y install /http-parser*.rpm
 # Install build dependencies and build Open MPI
 RUN ./install-packages.sh
 RUN ./openmpi-build.sh
@@ -35,7 +45,9 @@ COPY tutorials /etc/skel/tutorials
 COPY common/.tmux.conf LICENSE /etc/skel/
 COPY common/ssh_config /etc/ssh/ssh_config.d/common.conf
 COPY common/scripts/auto-ssh-keygen.sh /etc/profile.d/
-COPY common/packages.yaml /etc/skel/.spack/packages.yaml 
+COPY common/packages.yaml /etc/skel/.spack/packages.yaml
+COPY --from=el9-package /http-parser*.rpm ./
+RUN dnf -y install /http-parser*.rpm 
 
 # Install packages and run initial configuration
 RUN ./install-packages.sh && ./config-task.sh
@@ -79,9 +91,10 @@ COPY common/scripts/module-path.sh /etc/profile.d/z99-module-path.sh
 
 # --- Final setup ---
 # Create munge key, Slurm spool directories, and enable munge service. 
-RUN create-munge-key \
-    && mkdir -pv /var/spool/slurmctld \
-    && mkdir -pv /var/spool/slurmd \
+RUN mungekey \
+    && mkdir -pv /etc/munge /var/log/munge /var/run/munge /var/spool/slurmctld /var/spool/slurmd /var/log/slurm/ \
+    && chown -R munge:munge /etc/munge /var/log/munge /var/run/munge \
+    && chown -R slurm:slurm /var/spool/slurmctld /var/spool/slurmd /var/log/slurm/ \
     && ln -s /usr/lib/systemd/system/munge.service /etc/systemd/system/multi-user.target.wants/ 
 
 # Set the entrypoint for the container
