@@ -88,7 +88,7 @@ tag-{{ distro }}-multi-arch-image:
 
 {% endfor %}
 
-rpm-publish:
+{# rpm-publish:
   stage: build
   image: quay.io/rockylinux/rockylinux:9
   timeout: 10h
@@ -144,7 +144,7 @@ deb-publish:
 {% for distro in distros if distro.startswith('deb') %}
     - job: build-{{ distro }}-arm64-image
     - job: build-{{ distro }}-amd64-image
-{% endfor %}
+{% endfor %} #}
 
 .image-testing: &image-testing
   stage: build
