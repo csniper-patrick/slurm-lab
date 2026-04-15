@@ -39,6 +39,8 @@ build-{{ distro }}-amd64-image:
     expire_in: "1 days"
     paths:
       - ${CI_PROJECT_DIR}/slurm-repo-{{ distro }}-amd64/
+  tags:
+    - saas-linux-medium-amd64
   needs:
     - job: generate-secrets
 
@@ -176,6 +178,8 @@ test-{{ distro }}-amd64:
   variables:
     IMAGE_TAG: {{ tag }}
     COMPOSE_FILE: compose.ci.yml
+  tags:
+    - saas-linux-medium-amd64
   needs:
     - job: tag-{{ distro }}-multi-arch-image
   resource_group: image-testing-amd64
