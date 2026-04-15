@@ -8,7 +8,7 @@ x-database-volumes: &database-volumes
 # choose the image you want to use. 
 # go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
 x-lab-image: &lab-image
-  image: docker.io/csniper/slurm-lab:${TAG:-latest}
+  image: ${IMAGE:-docker.io/csniper/slurm-lab:${TAG:-latest}}
 
 x-master-container: &master-container
   <<: *lab-image

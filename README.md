@@ -59,11 +59,15 @@ This is the fastest way to get your Slurm lab running using images from [Docker 
 
 3.  **Select an image tag (Optional):**
     By default, the cluster uses the `latest` tag (Rocky Linux 9). You can use a different image by specifying the `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
-
     For example, to use the Debian-based image, add this line to your `.env` file:
     ```
     TAG=latest-deb
     ```
+    If you've pushed the image to your own registry, you could use variable `IMAGE` to specify the full name+tag. eg.
+    ```
+    IMAGE=harbor.example.com/slurm/slurm-lab:latest
+    ```
+    When variable `IMAGE` is defined, `TAG` is ignored.
 
 ### Local Development (Building from Source)
 
@@ -97,14 +101,22 @@ If you want to modify the project or build the container images locally, follow 
 
 ## Makefile
 
-This project includes a `Makefile` that simplifies building images and managing the development environment.
+This project includes a `Makefile` that simplifies building images and managing the development environment. It automates several complex steps:
 
-*   **`make build`**: Build all container images for the available distributions (e.g., `el8`, `el9`, `deb12`, `deb13`). This is the default target.
-*   **`make <distro>`**: Build a specific image, e.g., `make el9`.
-*   **`make clean`**: Removes generated files, including JWT keys.
-*   **`make prune`**: Prunes unused container images.
+*   **`make build`**: Builds all container images for the available distributions (e.g., `el8`, `el9`, `deb12`, `deb13`). This is the default target and is the primary command for building the cluster components.
+*   **`make <distro>`**: Builds a specific image, e.g., `make el9`.
+*   **`make clean`**: Removes generated files, including JWT keys, ensuring a clean slate for rebuilding.
+*   **`make prune`**: Prunes unused container images and volumes, keeping the local system clean.
 
-The `Makefile` will automatically generate the required JWT keys if they are not present.
+**Workflow Summary:**
+
+1.  **Setup/Prerequisites**: Run `make` (or `make all`) to ensure secrets are generated and all necessary container images are built for various operating system targets.
+2.  **Deployment**: Run `make up` to start the entire system stack in detached mode, bringing up all services defined in `compose.yml`.
+3.  **Development**: Run `make dev` for a local, development-focused startup using `compose.dev.yml`.
+4.  **Teardown**: Run `make down` to gracefully stop and remove the running services.
+5.  **Cleanup**: Run `make clean` to remove generated key material.
+
+The `Makefile` handles the dependency chain, automatically generating required JWT keys if they are missing before attempting any build.
 
 ## Usage
 
