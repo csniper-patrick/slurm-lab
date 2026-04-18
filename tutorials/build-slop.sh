@@ -15,5 +15,5 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r slop/requirements.txt
 pip install pyinstaller
-pyinstaller --hidden-import=urwid.display.html_fragment --hidden-import=urwid.display.lcd --collect-all=urwid --onefile slop/main.py -n slop
+pyinstaller --collect-all=urwid --onefile slop/main.py -n slop
 cp dist/slop /usr/local/bin/
