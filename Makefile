@@ -33,9 +33,9 @@ $(DISTROS): $(SECRET_FILES)
 $(SECRET_FILES): | common/secrets
 	@echo "Generating JWT keys..."
 	@$(PODMAN) run --rm -it \
-		-v "$(CURDIR)/json-web-key-generator:/json-web-key-generator" \
-		-v "$(CURDIR)/common/secrets:/opt" \
-		-v "$(CURDIR)/common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh" \
+		-v "$(CURDIR)/json-web-key-generator:/json-web-key-generator:Z" \
+		-v "$(CURDIR)/common/secrets:/opt:Z" \
+		-v "$(CURDIR)/common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh:Z" \
 		docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
 
 # Create the secrets directory if it doesn't exist.
