@@ -27,7 +27,7 @@ case $(uname -m) in
 		gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 		EOF
 		dnf clean all
-		dnf install -y $(dnf list cuda-nvml-devel* | grep -oE "^cuda-nvml-devel-[0-9]+-[0-9]+" | tail -n1) rocm
+		dnf install -y $(dnf list cuda-nvml-devel* | grep -oE "^cuda-nvml-devel-[0-9]+-[0-9]+" | tail -n1) rocm-core rocm-dev rocm-smi-lib
 		tee --append /etc/ld.so.conf.d/rocm.conf <<-EOF
 		/opt/rocm/lib
 		/opt/rocm/lib64

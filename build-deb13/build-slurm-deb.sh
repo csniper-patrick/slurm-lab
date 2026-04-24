@@ -32,7 +32,7 @@ case $(uname -m) in
 
 		# Update the package lists to include the new repositories
 		apt-get update
-		apt-get -y install $(apt-cache search cuda-nvml-dev | grep -oE "^cuda-nvml-dev-[0-9]+-[0-9]+" | sort | tail -n1) rocm
+		apt-get -y install $(apt-cache search cuda-nvml-dev | grep -oE "^cuda-nvml-dev-[0-9]+-[0-9]+" | sort | tail -n1) rocm-core rocm-dev rocm-smi-lib
 		;;
 	aarch64)
 		# Install CUDA keyring for aarch64 architecture
