@@ -20,8 +20,8 @@ case $(uname -m) in
 		# Add the repository to the apt sources list
 		# Register ROCm packages
 		tee /etc/apt/sources.list.d/rocm.list <<-EOF
-		deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/7.2 jammy main
-		deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/7.2/ubuntu jammy main
+		deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/latest jammy main
+		deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/latest/ubuntu jammy main
 		EOF
 
 		tee /etc/apt/preferences.d/rocm-pin-600 <<-EOF

@@ -11,16 +11,16 @@ case $(uname -m) in
 		# Install ROCm repository for x86_64 architecture
 		tee /etc/yum.repos.d/rocm.repo <<-EOF
 		[rocm]
-		name=ROCm 7.2.0 repository
-		baseurl=https://repo.radeon.com/rocm/el9/7.2/main
+		name=ROCm repository
+		baseurl=https://repo.radeon.com/rocm/el9/latest/main
 		enabled=1
 		priority=50
 		gpgcheck=1
 		gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 
 		[amdgraphics]
-		name=AMD Graphics 7.2.0 repository
-		baseurl=https://repo.radeon.com/graphics/7.2/el/9.7/main/x86_64/
+		name=AMD Graphics repository
+		baseurl=https://repo.radeon.com/graphics/latest/el/9.7/main/x86_64/
 		enabled=1
 		priority=50
 		gpgcheck=1
