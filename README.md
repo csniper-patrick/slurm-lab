@@ -7,13 +7,19 @@ This project provides an easy way to set up a complete Slurm cluster environment
 ## Features
 
 *   **Complete Cluster Environment**: Sets up a multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
-*   **JupyterHub Integration**: Includes a JupyterHub instance on the client node for an interactive environment.
 *   **Slurm REST API**: The Slurm REST API (`slurmrestd`) is enabled for programmatic access to the cluster.
 *   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12/13).
 *   **Flexible Authentication**: Choose between `auth/munge` (default) and `auth/slurm` for cluster authentication.
 *   **Customizable**: Easily configured through a `.env` file.
 *   **Federation & Multi Cluster**: Supports federated and multi-cluster environment can be enable but simply uncomment the relevant section in `compose.yml`.
 *   **Scalable**: Compute nodes can be scaled up or down on the fly.
+
+### Plugins & Integration
+* Includes a JupyterHub instance on the client node for an interactive environment. The following plugins are included:
+  * [**jupyter-slurm**](https://github.com/NERSC/jupyterlab-slurm.git) is a dashboard plugin for slurm interaction via jupyterhub
+  * [**jupyter-moss**](https://github.com/silx-kit/jupyterhub_moss) is a spawner, when enabled, you jupyterhub server session will start in a slurm job. 
+* [**slop**](https://github.com/buzh/slop): Includes the `slop` utility for a real-time, `top`-like view of Slurm jobs and cluster load.
+
 
 ## Cluster Components
 

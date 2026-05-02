@@ -7,7 +7,7 @@ dnf -y --enablerepo=rocky-9-baseos,rocky-9-appstream,rocky-9-crb,rocky-9-epel in
 dnf -y install slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which autoconf automake libtool xorg-x11-xauth hostname htop Lmod rsync btop iotop chrony munge munge-devel pmix pmix-devel
 
 # install jupyterhub
-dnf -y install python3.12 python3.12-pip python3.12-devel
+dnf -y install python3.13 python3.13-pip python3.13-devel
 dnf -y install nodejs
 
 # install nginx
