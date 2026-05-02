@@ -28,6 +28,7 @@ COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
 COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
+COPY slop /opt/slop
 
 # Copy scripts and configurations for user environment
 COPY build-el9/install-packages.sh common/scripts/config-task.sh ./

@@ -1,9 +1,13 @@
 #!/bin/bash
 
-# find best python
-SYS_PYTHON=$(which python3.12)
-SYS_PYTHON=${SYS_PYTHON:-$(which python3.11)}
-SYS_PYTHON=${SYS_PYTHON:-$(which python3)}
+# 1. Define the list of versions from newest to oldest
+py_vers=("python3.14" "python3.13" "python3.12" "python3.11" "python3")
+SYS_PYTHON=""
+# 2. Loop through and find the best one
+for py in "${py_vers[@]}"; do
+    # Short-circuit one-liner: Assign the variable AND break if successful
+    SYS_PYTHON=$(command -v "$py" 2>/dev/null) && break
+done
 
 # Prepare Jupyterhub environment
 ${SYS_PYTHON} -m venv /opt/jupyterhub/
@@ -17,6 +21,14 @@ npm install -g only-allow
 npm install -g configurable-http-proxy
 mkdir -p /opt/jupyterhub/etc/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install PyJWT requests getent2 pandas
+
+# build and install slop
+${SYS_PYTHON} -m venv /opt/slop/
+cd /opt/slop
+/opt/slop/bin/python3 -m pip install -r slop/requirements.txt
+/opt/slop/bin/python3 -m pip install pyinstaller
+/opt/slop/bin/pyinstaller --collect-all=urwid --onefile slop/main.py -n slop
+cp dist/slop /usr/local/bin/
 
 # Create users
 useradd -r -b /var/lib slurm

@@ -7,3 +7,6 @@
 [submodule "ompi"]
 	path = ompi
 	url = https://github.com/open-mpi/ompi.git
+[submodule "slop"]
+	path = slop
+	url = https://github.com/buzh/slop.git

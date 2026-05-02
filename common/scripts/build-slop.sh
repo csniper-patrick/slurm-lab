@@ -11,9 +11,9 @@ fi
 
 # 3. build and install
 cd /opt/slop
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .
+source /opt/slop/bin/activate
 pip install -r slop/requirements.txt
 pip install pyinstaller
 pyinstaller --collect-all=urwid --onefile slop/main.py -n slop
-cp dist/slop /usr/local/bin/
+cp /opt/slop/dist/slop /usr/local/bin/
