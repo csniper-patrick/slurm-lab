@@ -18,7 +18,7 @@ stages:
 include:
   - local: 'gitlab-ci.d/test.yml'
   - local: 'gitlab-ci.d/init.yml'
-  - project: 'CSniper/ci-mgmt'
+  - project: '$CI_PROJECT_NAMESPACE/ci-mgmt'
     file: 'code-review.yml'
     ref: 'main'
 
