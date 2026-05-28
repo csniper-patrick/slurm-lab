@@ -2,12 +2,12 @@ generate-secrets:
   stage: build
   image: docker.io/library/maven:3.8.7-openjdk-18-slim
   script:
-    - cd ${CI_PROJECT_DIR}/json-web-key-generator
+    - cd ${CI_PROJECT_DIR}/modules/json-web-key-generator
     - mvn package
     - cd ${CI_PROJECT_DIR}
     - mkdir -p ${CI_PROJECT_DIR}/common/secrets
-    - java -jar ${CI_PROJECT_DIR}/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/jwks.json --pubKeyOutput ${CI_PROJECT_DIR}/common/secrets/jwks.pub.json
-    - java -jar ${CI_PROJECT_DIR}/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/slurm.jwks
+    - java -jar ${CI_PROJECT_DIR}/modules/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/jwks.json --pubKeyOutput ${CI_PROJECT_DIR}/common/secrets/jwks.pub.json
+    - java -jar ${CI_PROJECT_DIR}/modules/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/slurm.jwks
   artifacts:
     when: on_success
     access: all
@@ -113,7 +113,7 @@ tag-{{ distro }}-multi-arch-image:
       EOF
     - cd ${CI_PROJECT_DIR}/slurm-repo
     - |
-      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -i curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/rpm/{}
+      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -I{} curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/rpm/{}
   needs:
 {% for distro in distros if distro.startswith('el') %}
     - job: build-{{ distro }}-arm64-image
@@ -141,7 +141,7 @@ deb-publish:
       deb [trusted=yes] ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/deb/ stable main
       EOF
     - |
-      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -i curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/deb/{}
+      find . -type f -exec sh -c 'echo ${0#./}' "{}" \; | xargs -I{} curl --silent --retry 5 --retry-all-errors --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file {} ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${full_ver}/deb/{}
   needs:
 {% for distro in distros if distro.startswith('deb') %}
     - job: build-{{ distro }}-arm64-image

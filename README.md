@@ -94,7 +94,7 @@ If you want to modify the project or build the container images locally, follow 
     ```bash
     mkdir -pv common/secrets
     podman run --rm -it \
-        -v ./json-web-key-generator:/json-web-key-generator \
+        -v ./modules/json-web-key-generator:/json-web-key-generator \
         -v ./common/secrets:/opt \
         -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
         docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
@@ -123,6 +123,10 @@ This project includes a `Makefile` that simplifies building images and managing 
 5.  **Cleanup**: Run `make clean` to remove generated key material.
 
 The `Makefile` handles the dependency chain, automatically generating required JWT keys if they are missing before attempting any build.
+
+> [!NOTE]
+> Build logs for each distribution are saved to `*-img-build.log` in the root directory for easier troubleshooting.
+
 
 ## Usage
 
@@ -169,7 +173,7 @@ podman compose up -d --scale compute=6 --no-recreate
 
 ### Accessing the Slurm REST API
 
-The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.44` (the exact version may differ).
+The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.45` (the exact version may differ).
 
 Please refer to the official documentation for authenticating your requests and for API usage:
 -   [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
@@ -202,11 +206,6 @@ You can customize the cluster by setting variables in the `.env` file.
 ## Known Issues
 
 *   The `module` command is not available in Jupyter Notebooks running on the Debian based image.
-*   Rocky 10 image is built but with ugly workaround.
-    *   The `http-parser` dependency has not been updated to `llhttp` (see [Replace http-parser dependency with llhttp](https://support.schedmd.com/show_bug.cgi?id=21801))
-    *   The `libjwt` shipped in Rocky 10 made `jwt_Base64encode` private, causing symbol lookup error.
-    *   The image is built by snatching `http-parser`, `http-parser-devel`, `libjwt`, and `libjwt-devel` package from the rocky 9 repository. Hence, I will not make the el10 image the default for el yet, hopefully these issue are resolved soon.
-
 ## Roadmap
 
 *   Feature testing for Lua scripts (burst buffer, job submission plugins, routing).

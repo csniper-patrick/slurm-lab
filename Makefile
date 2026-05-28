@@ -1,5 +1,8 @@
 # Makefile for building slurm-lab container images
 
+SHELL := /bin/bash
+.SHELLFLAGS := -o pipefail -c
+
 # Use podman if available, otherwise fall back to docker.
 PODMAN ?= $(shell which podman 2>/dev/null || which docker 2>/dev/null)
 ifeq ($(PODMAN),)
@@ -27,13 +30,13 @@ build: $(DISTROS)
 # Depends on the JWT key files being present.
 $(DISTROS): $(SECRET_FILES)
 	@echo "Building slurm-lab:$@" image...
-	@$(PODMAN) build --jobs=0 --pull=newer -t slurm-lab:$@ --squash -f build-$@/Containerfile .
+	@$(PODMAN) build --jobs=0 --pull=newer -t slurm-lab:$@ --squash -f build-$@/Containerfile . 2>&1 | tee $@-img-build.log
 
 # A rule to generate JWT key files if they don't exist.
 $(SECRET_FILES): | common/secrets
 	@echo "Generating JWT keys..."
 	@$(PODMAN) run --rm -it \
-		-v "$(CURDIR)/json-web-key-generator:/json-web-key-generator:Z" \
+		-v "$(CURDIR)/modules/json-web-key-generator:/json-web-key-generator:Z" \
 		-v "$(CURDIR)/common/secrets:/opt:Z" \
 		-v "$(CURDIR)/common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh:Z" \
 		docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
@@ -64,4 +67,4 @@ down:
 # Clean up generated files.
 clean:
 	@echo "Cleaning up generated files..."
-	@rm -rf common/secrets
+	@rm -rf common/secrets *build.log

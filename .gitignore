@@ -1,3 +1,5 @@
 .vscode/*
 .ansible/*
 common/secrets/**
+.antigravitycli/
+*-img-build.log

@@ -1,7 +1,13 @@
 #!/bin/bash
+# This tutorial script represents a "cleanup" task in a job dependency chain.
+# It displays accounting information for the current user and then sleeps.
 
-echo i am suppose to clean up, showing job record instead
+# Get the current username from the environment
+USER_NAME=${USER:-$(id -un)}
 
-sacct --user jeremie
+echo "Cleanup task: Displaying Slurm accounting records for user '${USER_NAME}'"
 
+sacct --user "${USER_NAME}"
+
+# Sleep to allow for observation
 sleep 30
