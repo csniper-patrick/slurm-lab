@@ -3,7 +3,7 @@
 FROM quay.io/rockylinux/rockylinux:9 as build-slurm
 # Copy the build scripts and Slurm source code
 COPY build-el9/*.sh ./
-COPY slurm ./slurm-src
+COPY modules/slurm /usr/local/src/slurm
 # Run the build script to create RPM packages
 RUN ./build-slurm-rpm.sh
 
@@ -14,7 +14,7 @@ FROM quay.io/rockylinux/rockylinux:9 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 # Copy the Open MPI source code and build scripts
-COPY ompi ./ompi-src
+COPY modules/ompi /usr/local/src/ompi
 COPY build-el9/install-packages.sh common/scripts/openmpi-build.sh ./
 # Install build dependencies and build Open MPI
 RUN ./install-packages.sh
@@ -27,8 +27,8 @@ FROM quay.io/rockylinux/rockylinux:9
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/yum.repos.d/slurm.repo /etc/yum.repos.d/slurm.repo
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
-COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
-COPY slop /opt/slop
+COPY --from=build-slurm /usr/share/nginx/html/doc /usr/share/nginx/html/doc
+COPY modules/slop /usr/local/src/slop
 
 # Copy scripts and configurations for user environment
 COPY build-el9/install-packages.sh common/scripts/config-task.sh ./

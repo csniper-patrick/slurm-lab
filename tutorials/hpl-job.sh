@@ -4,17 +4,22 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --exclusive
 
-# load hpl from module or spack
+# This tutorial script demonstrates how to run the HPL (High-Performance Linpack)
+# benchmark within the Slurm Lab environment. It dynamically generates an
+# HPL.dat input file based on the job allocation.
+
+# 1. Load HPL using environment modules or Spack
 module load hpl || spack load hpl
 
-# check if runing in a slurm job
-[[ -n ${SLURM_JOBID} ]] || exit 1
+# 2. Safety check: ensure we are running inside a Slurm job
+[[ -n ${SLURM_JOBID} ]] || { echo "This script must be run via sbatch/salloc"; exit 1; }
 
-# create run folder
+# 3. Create a unique run directory for this job
 mkdir HPL-${SLURM_JOBID}
 cd HPL-${SLURM_JOBID}
 
-# generate hpl.dat
+# 4. Generate HPL.dat input file
+# The matrix size (N) is scaled based on the number of nodes
 cat > HPL.dat <<EOF
 HPLinpack benchmark input file
 Innovative Computing Laboratory, University of Tennessee
@@ -49,8 +54,11 @@ ${SLURM_NTASKS_PER_NODE}            Qs
 8            memory alignment in double (> 0)
 EOF
 
+# 5. Set OpenMP threads per MPI task
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
 
+# Print the path to the xhpl executable
 which xhpl
 
+# 6. Run the benchmark using mpirun
 mpirun --bind-to none xhpl

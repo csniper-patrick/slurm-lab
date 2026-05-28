@@ -3,7 +3,7 @@
 FROM docker.io/library/debian:13 as build-slurm
 # Copy the build scripts and Slurm source code
 COPY build-deb13/*.sh ./
-COPY slurm ./slurm-src
+COPY modules/slurm /usr/local/src/slurm
 # Run the build script to create Debian packages
 RUN ./build-slurm-deb.sh
 
@@ -14,7 +14,7 @@ FROM docker.io/library/debian:13 as build-mpi
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
 # Copy the Open MPI source code and build scripts
-COPY ompi ./ompi-src
+COPY modules/ompi /usr/local/src/ompi
 COPY build-deb13/install-packages.sh common/scripts/openmpi-build.sh ./
 # Install build dependencies and build Open MPI
 RUN ./install-packages.sh
@@ -27,8 +27,8 @@ FROM docker.io/library/debian:13
 COPY --from=build-slurm /opt/slurm-repo /opt/slurm-repo
 COPY --from=build-slurm /etc/apt/sources.list.d/slurm.list /etc/apt/sources.list.d/slurm.list
 COPY --from=build-mpi /opt/openmpi /opt/openmpi
-COPY --from=build-slurm /opt/doc /usr/share/nginx/html/doc
-COPY slop /opt/slop
+COPY --from=build-slurm /usr/share/nginx/html/doc /usr/share/nginx/html/doc
+COPY modules/slop /usr/local/src/slop
 
 # Copy scripts and configurations for user environment
 COPY build-deb13/install-packages.sh common/scripts/config-task.sh ./

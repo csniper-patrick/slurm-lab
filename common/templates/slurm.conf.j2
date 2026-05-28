@@ -172,5 +172,9 @@ ScronParameters=enable
 MaxNodeCount=128
 TreeWidth=65533
 
+# Prometheus Metrics
+#MetricsType=metrics/openmetrics
+#MetricsParameters=ignore_private_data
+
 # Default partition
 PartitionName={{ CLUSTERNAME | default("slurm-lab", true ) }}-default Nodes=ALL Default=YES MaxTime=INFINITE State=UP

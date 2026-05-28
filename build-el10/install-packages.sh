@@ -1,26 +1,27 @@
 #!/bin/bash
+# This script installs Slurm and other essential packages for Enterprise Linux 10 (RHEL/Rocky 10).
+# It also configures JupyterHub, Nginx, PAM, and Lmod for the environment.
 
-# Install slurm
+# 1. Install Slurm and its dependencies
 dnf install -y yum-utils epel-release
 dnf config-manager --enable crb
-dnf -y --enablerepo=rocky-9-baseos,rocky-9-appstream,rocky-9-crb,rocky-9-epel install http-parser http-parser-devel libjwt libjwt-devel
 dnf -y install slurm-{slurmctld,slurmd,slurmdbd,slurmrestd,sackd,example-configs,contribs,devel,libpmi,pam_slurm}  @development gcc-gfortran hwloc openssh-server rdma-core rdma-core-devel librdmacm hwloc hwloc-devel which autoconf automake libtool xorg-x11-xauth hostname htop Lmod rsync btop iotop chrony munge munge-devel pmix pmix-devel
 
-# install jupyterhub
+# 2. Install Python and Node.js for JupyterHub
 dnf -y install python3.13 python3.13-pip python3.13-devel
 dnf -y install nodejs
 
-# install nginx
+# 3. Install Nginx for serving documentation and as a proxy
 dnf -y install nginx
 
-# install extra packages
+# 4. Install extra utility packages
 dnf -y install tmux sudo vim man ansible-core iproute nmap wget 
 
-# update all and clear yum cache
-dnf -y update
+# 5. Perform system cleanup
+# dnf -y update
 dnf clean all
 
-# create slurm account and user on login
+# 6. Configure PAM to automatically create Slurm accounts and users on login
 for pam_file in /etc/pam.d/{password-auth,system-auth} ; do
 	cat >> ${pam_file} <<-EOF
 		auth        optional      pam_exec.so /etc/slurm/create-account-user.sh
@@ -28,5 +29,5 @@ for pam_file in /etc/pam.d/{password-auth,system-auth} ; do
 	EOF
 done
 
-# activate lmod
+# 7. Activate Lmod (Lua-based module system)
 ln -s /usr/share/lmod/lmod/init/bash /etc/profile.d/z99-lmod.sh

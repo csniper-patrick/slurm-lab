@@ -1,12 +1,12 @@
 [submodule "slurm"]
-	path = slurm
+	path = modules/slurm
 	url = https://github.com/SchedMD/slurm.git
 [submodule "json-web-key-generator"]
-	path = json-web-key-generator
+	path = modules/json-web-key-generator
 	url = https://github.com/bspk/json-web-key-generator.git
 [submodule "ompi"]
-	path = ompi
+	path = modules/ompi
 	url = https://github.com/open-mpi/ompi.git
 [submodule "slop"]
-	path = slop
+	path = modules/slop
 	url = https://github.com/buzh/slop.git
