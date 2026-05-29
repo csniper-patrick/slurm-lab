@@ -15,7 +15,7 @@ generate-secrets:
     paths:
       - ${CI_PROJECT_DIR}/common/secrets/*
 
-build-image:
+build-amd64-image:
   stage: build
   image: quay.io/podman/stable:latest
   timeout: 10h
@@ -26,10 +26,10 @@ build-image:
   before_script:
     - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
   script:
-    - ( podman pull ${IMAGE_TAG}-${ARCH} ) || ( podman build --jobs=0 --squash -f ${CONTAINERFILE} -t ${IMAGE_TAG}-${ARCH} . && podman push --retry=5 ${IMAGE_TAG}-${ARCH} )
-    - CONTAINERID=$( podman create ${IMAGE_TAG}-${ARCH} )
-    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-${ARCH}/
-    - podman cp ${CONTAINERID}:/opt/slurm-repo/. ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-${ARCH}/
+    - ( podman pull ${IMAGE_TAG}-amd64 ) || ( podman build --jobs=0 --squash -f ${CONTAINERFILE} -t ${IMAGE_TAG}-amd64 . && podman push --retry=5 ${IMAGE_TAG}-amd64 )
+    - CONTAINERID=$( podman create ${IMAGE_TAG}-amd64 )
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-amd64/
+    - podman cp ${CONTAINERID}:/opt/slurm-repo/. ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-amd64/
   variables:
     CONTAINERFILE: "build-${DISTRO}/Containerfile"
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
@@ -38,19 +38,46 @@ build-image:
     access: all
     expire_in: "1 days"
     paths:
-      - ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-${ARCH}/
+      - ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-amd64/
   tags:
-    - ${RUNNER_TAG}
+    - saas-linux-medium-amd64
   needs:
     - job: generate-secrets
   parallel:
     matrix:
       - DISTRO: {{ distros }}
-        ARCH: amd64
-        RUNNER_TAG: saas-linux-medium-amd64
+
+build-arm64-image:
+  stage: build
+  image: quay.io/podman/stable:latest
+  timeout: 10h
+  retry: 2
+  hooks:
+    pre_get_sources_script:
+      - umask 0022
+  before_script:
+    - podman login -u "${CI_REGISTRY_USER}" -p "${CI_REGISTRY_PASSWORD}" ${CI_REGISTRY}
+  script:
+    - ( podman pull ${IMAGE_TAG}-arm64 ) || ( podman build --jobs=0 --squash -f ${CONTAINERFILE} -t ${IMAGE_TAG}-arm64 . && podman push --retry=5 ${IMAGE_TAG}-arm64 )
+    - CONTAINERID=$( podman create ${IMAGE_TAG}-arm64 )
+    - mkdir -pv ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-arm64/
+    - podman cp ${CONTAINERID}:/opt/slurm-repo/. ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-arm64/
+  variables:
+    CONTAINERFILE: "build-${DISTRO}/Containerfile"
+    IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: "1 days"
+    paths:
+      - ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-arm64/
+  tags:
+    - saas-linux-small-arm64
+  needs:
+    - job: generate-secrets
+  parallel:
+    matrix:
       - DISTRO: {{ distros }}
-        ARCH: arm64
-        RUNNER_TAG: saas-linux-small-arm64
 
 tag-multi-arch-image:
   stage: build
@@ -69,11 +96,14 @@ tag-multi-arch-image:
   variables:
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
   needs:
-    - job: build-image
+    - job: build-amd64-image
       parallel:
         matrix:
           - DISTRO: '$[[ matrix.DISTRO ]]'
-            ARCH: [amd64, arm64]
+    - job: build-arm64-image
+      parallel:
+        matrix:
+          - DISTRO: '$[[ matrix.DISTRO ]]'
   parallel:
     matrix:
       - DISTRO: {{ distros }}
@@ -159,26 +189,36 @@ deb-publish:
   rules:
     - if: $VERIFY_IMAGE == 'true'
 
-test-image:
+test-amd64:
   <<: *image-testing
   variables:
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
     COMPOSE_FILE: compose.ci.yml
   tags:
-    - ${RUNNER_TAG}
+    - saas-linux-medium-amd64
   needs:
     - job: tag-multi-arch-image
       parallel:
         matrix:
           - DISTRO: '$[[ matrix.DISTRO ]]'
-  resource_group: ${RESOURCE_GROUP}
+  resource_group: image-testing-amd64
   parallel:
     matrix:
       - DISTRO: {{ distros }}
-        ARCH: amd64
-        RUNNER_TAG: saas-linux-medium-amd64
-        RESOURCE_GROUP: image-testing-amd64
+
+test-arm64:
+  <<: *image-testing
+  variables:
+    IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
+    COMPOSE_FILE: compose.ci.yml
+  tags:
+    - saas-linux-small-arm64
+  needs:
+    - job: tag-multi-arch-image
+      parallel:
+        matrix:
+          - DISTRO: '$[[ matrix.DISTRO ]]'
+  resource_group: image-testing-arm64
+  parallel:
+    matrix:
       - DISTRO: {{ distros }}
-        ARCH: arm64
-        RUNNER_TAG: saas-linux-small-arm64
-        RESOURCE_GROUP: image-testing-arm64
