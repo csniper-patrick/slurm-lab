@@ -132,7 +132,7 @@ The `Makefile` handles the dependency chain, automatically generating required J
 
 ### Accessing JupyterHub
 
-Once the cluster is running, you can access the JupyterHub environment at [http://localhost:8080/](http://localhost:8080/).
+Once the cluster is running, you can access the JupyterHub environment at [http://localhost:8080/](http://localhost:8080/) (or the configured custom port).
 
 You can log in with one of the following usernames (no password needed): `jeremie`, `aelita`, `yumi`, `ulrich`, `odd`.
 *(These are characters from the show [Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko)).*
@@ -173,7 +173,7 @@ podman compose up -d --scale compute=6 --no-recreate
 
 ### Accessing the Slurm REST API
 
-The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.45` (the exact version may differ).
+The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.45` (replace `8080` with your custom port if configured).
 
 Please refer to the official documentation for authenticating your requests and for API usage:
 -   [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
@@ -181,7 +181,7 @@ Please refer to the official documentation for authenticating your requests and 
 
 ### Slurm Documentation
 
-The official documentation for the version of Slurm installed in the container is available at [http://localhost:8080/doc/](http://localhost:8080/doc/).
+The official documentation for the version of Slurm installed in the container is available at [http://localhost:8080/doc/](http://localhost:8080/doc/) (replace `8080` with your custom port if configured).
 
 ## Tutorials
 
@@ -196,12 +196,26 @@ This project includes a set of tutorials in the `tutorials/` directory to help y
 
 ## Configuration
 
-You can customize the cluster by setting variables in the `.env` file.
+You can customize the cluster by setting variables in the `.env` file or passing them as environment variables.
 
 *   `TAG`: The Docker image tag to use (e.g., `latest`, `latest-deb`). See available tags on [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab/tags).
 *   `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_RANDOM_ROOT_PASSWORD`: Required credentials for the MariaDB database.
 *   `AUTHTYPE`: The Slurm authentication plugin. Can be `auth/munge` (default) or `auth/slurm`. Setting it to `auth/slurm` removes the need for the `munge` daemon.
 *   `JUPYTER_SPAWNER`: By default, JupyterLab sessions are spawned inside the `client` container. Set this to `moss` to use the [JupyterHub MOdular Slurm Spawner (moss)](https://github.com/silx-kit/jupyterhub_moss), which runs each JupyterLab session as a Slurm job on a compute node.
+*   `PORT`: Controls the external web interface port mapped to the client node (default: `8080`).
+
+### Customizing the Web Port
+
+The web interface (JupyterHub, Slurm documentation, and the REST API) is exposed on port `8080` by default. You can customize this by setting the `PORT` variable in your `.env` file or on the command line:
+
+```sh
+PORT=9000 make up
+```
+
+This is useful for:
+1. **Running multiple stacks concurrently**: Avoids port binding conflicts when starting more than one stack.
+2. **Shared environments**: Allows running the stack when port `8080` is already in use by another application.
+3. **Dynamic port allocation (Special Usage)**: Setting `PORT=0` (e.g., `PORT=0 make up` or `PORT=0 make dev`) instructs the system to find and bind to a random available port. The Makefile will automatically detect and print the actual allocated port once the services are started.
 
 ## Known Issues
 

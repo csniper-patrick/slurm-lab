@@ -9,6 +9,10 @@ ifeq ($(PODMAN),)
     $(error "Neither podman nor docker found in PATH")
 endif
 
+# Web interface port (default: 8080)
+PORT ?= 8080
+export PORT
+
 # Default distributions to build.
 # Can be overridden from the command line, e.g.:
 DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containerfile 2>/dev/null)))
@@ -55,10 +59,24 @@ prune:
 up:
 	@echo "Starting slurm-lab stack..."
 	@$(PODMAN) compose up -d --remove-orphans --force-recreate
+	@echo "Detecting web port..."
+	@actual_port=$$($(PODMAN) port slurm-lab-client 80 2>/dev/null | head -n1 | awk -F: '{print $$NF}' | tr -d '[:space:]') ; \
+	if [ -n "$$actual_port" ]; then \
+		echo "Web interface is available at http://localhost:$$actual_port"; \
+	else \
+		echo "Web interface is available at http://localhost:$(PORT)"; \
+	fi
 
 dev:
 	@echo "Starting slurm-lab stack (localhost)..."
 	@$(PODMAN) compose -f compose.dev.yml up -d --remove-orphans --force-recreate
+	@echo "Detecting web port..."
+	@actual_port=$$($(PODMAN) port slurm-lab-client 80 2>/dev/null | head -n1 | awk -F: '{print $$NF}' | tr -d '[:space:]') ; \
+	if [ -n "$$actual_port" ]; then \
+		echo "Web interface is available at http://localhost:$$actual_port"; \
+	else \
+		echo "Web interface is available at http://localhost:$(PORT)"; \
+	fi
 
 down:
 	@echo "Stopping slurm-lab stack..."
