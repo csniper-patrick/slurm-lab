@@ -13,6 +13,7 @@ This project provides an easy way to set up a complete Slurm cluster environment
 *   **Customizable**: Easily configured through a `.env` file.
 *   **Federation & Multi Cluster**: Supports federated and multi-cluster environment can be enable but simply uncomment the relevant section in `compose.yml`.
 *   **Scalable**: Compute nodes can be scaled up or down on the fly.
+*   **Rootless Podman Integration**: Seamlessly run rootless OCI containers using Podman directly inside Slurm jobs using a custom staging mechanism.
 
 ### Plugins & Integration
 * Includes a JupyterHub instance on the client node for an interactive environment. The following plugins are included:
@@ -223,7 +224,6 @@ This is useful for:
 ## Roadmap
 
 *   Feature testing for Lua scripts (burst buffer, job submission plugins, routing).
-*   Explore Slurm's Podman integration.
 
 ## Contributing
 

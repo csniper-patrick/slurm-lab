@@ -8,9 +8,9 @@ sudo: true
 use_arp_ping: false
 
 groups:
-    slurmctld_host:  "ports | selectattr('port', '==', '6817') | selectattr('state', '==', 'open')"
-    slurmd_host:     "ports | selectattr('port', '==', '6818') | selectattr('state', '==', 'open')"
-    slurmdbd_host:   "ports | selectattr('port', '==', '6819') | selectattr('state', '==', 'open')"
-    slurmrestd_host: "ports | selectattr('port', '==', '6820') | selectattr('state', '==', 'open')"
-    db_host:         "ports | selectattr('port', '==', '3306') | selectattr('state', '==', 'open')"
-    client_host:     "ports | selectattr('port', '==', '80') | selectattr('state', '==', 'open')"
+    slurmctld_host:  "ports | selectattr('port', 'in', [6817, '6817']) | selectattr('state', '==', 'open') | list | length > 0"
+    slurmd_host:     "ports | selectattr('port', 'in', [6818, '6818']) | selectattr('state', '==', 'open') | list | length > 0"
+    slurmdbd_host:   "ports | selectattr('port', 'in', [6819, '6819']) | selectattr('state', '==', 'open') | list | length > 0"
+    slurmrestd_host: "ports | selectattr('port', 'in', [6820, '6820']) | selectattr('state', '==', 'open') | list | length > 0"
+    db_host:         "ports | selectattr('port', 'in', [3306, '3306']) | selectattr('state', '==', 'open') | list | length > 0"
+    client_host:     "ports | selectattr('port', 'in', [80, '80']) | selectattr('state', '==', 'open') | list | length > 0"
