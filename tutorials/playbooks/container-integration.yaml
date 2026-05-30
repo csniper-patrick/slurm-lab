@@ -3,65 +3,128 @@
 - name: Deploy podman and integrated with slurm
   hosts: slurmctld_host,slurmd_host,client_host
   tasks:
-    - name: Get list of packages
-      ansible.builtin.package_facts:
-        manager: auto
+    - name: Check if podman is installed
+      ansible.builtin.command: which podman
+      register: podman_check
+      failed_when: false
+      changed_when: false
 
-    - name: Install podman
-      block:
+    - name: Remove shadow-utils
+      ansible.builtin.dnf:
+        name: shadow-utils
+        state: absent
+      when:
+        - podman_check.rc != 0
+        - ansible_distribution_file_variety == "RedHat"
 
-        - name: Check if podman is installed
-          ansible.builtin.fail:
-            msg: "podman not installed"
-          when: "'podman' not in ansible_facts.packages"
+    - name: Install podman (dnf)
+      ansible.builtin.dnf:
+        name:
+          - shadow-utils
+          - podman
+          - fuse-overlayfs
+          - crun
+        state: present
+      when:
+        - podman_check.rc != 0
+        - ansible_distribution_file_variety == "RedHat"
 
-      rescue:
+    - name: Install podman (apt)
+      ansible.builtin.apt:
+        name:
+          - podman
+          - fuse-overlayfs
+          - crun
+        state: present
+        update_cache: true
+      when:
+        - podman_check.rc != 0
+        - ansible_distribution_file_variety == "Debian"
 
-        - name: Remove shadow-utils
-          ansible.builtin.dnf:
-            name: shadow-utils
-            state: absent
-          when: ansible_distribution_file_variety == "RedHat"
+    - name: Ensure crun is installed (dnf)
+      ansible.builtin.dnf:
+        name: crun
+        state: present
+      when: ansible_distribution_file_variety == "RedHat"
 
-        - name: Install podman (dnf)
-          ansible.builtin.dnf:
-            name:
-              - shadow-utils
-              - podman
-              - fuse-overlayfs
-            # exclude:
-            #   - container-selinux
-          when: ansible_distribution_file_variety == "RedHat"
+    - name: Ensure crun is installed (apt)
+      ansible.builtin.apt:
+        name: crun
+        state: present
+        update_cache: true
+      when: ansible_distribution_file_variety == "Debian"
 
-        - name: Install podman (apt)
-          ansible.builtin.apt:
-            name:
-              - podman
-              - fuse-overlayfs
-            update_cache: true
-          when: ansible_distribution_file_variety == "Debian"
+    - name: Ensure lua-json is installed (apt)
+      ansible.builtin.apt:
+        name: lua-json
+        state: present
+        update_cache: true
+      when: ansible_distribution_file_variety == "Debian"
 
-    - name: Get list of packages
-      ansible.builtin.package_facts:
-        manager: auto
+    - name: Check if native lua-json 5.4 exists
+      ansible.builtin.stat:
+        path: /usr/share/lua/5.4/json.lua
+      register: native_json_54
 
-    - name: Deploy /etc/slurm/oci.conf (runc)
-      ansible.builtin.copy:
-        src: "{{ playbook_dir }}/files/oci-runc.conf"
-        dest: /etc/slurm/oci.conf
-        mode: "0644"
-      when: "'runc' in ansible_facts.packages"
-      notify:
-        - Restart slurmctld
-        - Restart slurmd
-        - Restart sackd
+    - name: Check if lua-json 5.3 exists
+      ansible.builtin.stat:
+        path: /usr/share/lua/5.3/json.lua
+      register: json_53
+
+    - name: Ensure lua 5.4 directory exists
+      ansible.builtin.file:
+        path: /usr/share/lua/5.4
+        state: directory
+        mode: "0755"
+      when:
+        - ansible_distribution_file_variety == "Debian"
+        - json_53.stat.exists
+        - not native_json_54.stat.exists
+
+    - name: Link lua-json 5.3 to 5.4
+      ansible.builtin.file:
+        src: /usr/share/lua/5.3/{{ item }}
+        dest: /usr/share/lua/5.4/{{ item }}
+        state: link
+      loop:
+        - json.lua
+        - json
+      when:
+        - ansible_distribution_file_variety == "Debian"
+        - json_53.stat.exists
+        - not native_json_54.stat.exists
+
+    - name: Check if crun is installed
+      ansible.builtin.command: which crun
+      register: crun_check
+      failed_when: false
+      changed_when: false
+
+    - name: Check if runc is installed
+      ansible.builtin.command: which runc
+      register: runc_check
+      failed_when: false
+      changed_when: false
 
     - name: Deploy /etc/slurm/oci.conf (crun)
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/files/oci-crun.conf"
         dest: /etc/slurm/oci.conf
         mode: "0644"
-      when: "'crun' in ansible_facts.packages"
+      when: crun_check.rc == 0
+      notify:
+        - Restart slurmctld
+        - Restart slurmd
+        - Restart sackd
+
+    - name: Deploy /etc/slurm/oci.conf (runc)
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/files/oci-runc.conf"
+        dest: /etc/slurm/oci.conf
+        mode: "0644"
+      when:
+        - crun_check.rc != 0
+        - runc_check.rc == 0
       notify:
         - Restart slurmctld
         - Restart slurmd

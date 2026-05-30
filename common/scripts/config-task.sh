@@ -71,3 +71,8 @@ tac /etc/pam.d/sshd | sed -e '0,/^account/ s/^account/-account required pam_slur
 # 8. Configure SSH for the root user
 ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -N ""
 cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys
+
+# 9. Install community.general collection for Ansible
+ansible-galaxy collection install -r /requirements.yaml -p /usr/share/ansible/collections
+rm -f /requirements.yaml
+
