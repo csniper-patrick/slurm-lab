@@ -40,7 +40,7 @@ build-amd64-image:
     paths:
       - ${CI_PROJECT_DIR}/slurm-repo-${DISTRO}-amd64/
   tags:
-    - saas-linux-medium-amd64
+    - saas-linux-small-amd64
   needs:
     - job: generate-secrets
   parallel:
@@ -195,7 +195,7 @@ test-amd64:
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
     COMPOSE_FILE: compose.ci.yml
   tags:
-    - saas-linux-medium-amd64
+    - saas-linux-small-amd64
   needs:
     - job: tag-multi-arch-image
       parallel:
