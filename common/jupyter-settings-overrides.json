@@ -1,5 +1,9 @@
 {
 	"@jupyterlab/apputils-extension:themes": {
 		"theme": "JupyterLab Dark"
+	},
+	"@jupyterlab/terminal-extension:plugin": {
+		"fontSize": 18,
+		"fontFamily": "monospace"
 	}
 }
