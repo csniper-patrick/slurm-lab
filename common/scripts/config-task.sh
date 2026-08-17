@@ -17,7 +17,11 @@ ${SYS_PYTHON} -m venv /opt/jupyterhub/
 /opt/jupyterhub/bin/python3 -m pip install ipywidgets sudospawner
 # Install jupyterlab-slurm extension (try pip first, fallback to git)
 /opt/jupyterhub/bin/python3 -m pip install jupyterlab-slurm || /opt/jupyterhub/bin/python3 -m pip install git+https://github.com/NERSC/jupyterlab-slurm.git
+# Install jupyterhub-moss extension
 /opt/jupyterhub/bin/python3 -m pip install jupyterhub-moss>=10.0.0
+# Install jupyter-ai extension
+/opt/jupyterhub/bin/python3 -m pip install jupyter-ai
+# Install bash kernel for Jupyter
 /opt/jupyterhub/bin/python3 -m bash_kernel.install
 npm install -g only-allow
 npm install -g configurable-http-proxy
