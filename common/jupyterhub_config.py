@@ -199,7 +199,7 @@ c.DummyAuthenticator.password = ""
 #          This is the address on which the proxy will bind.
 #          Sets protocol, ip, base_url
 #  Default: 'http://:8000'
-# c.JupyterHub.bind_url = 'http://:8000'
+c.JupyterHub.bind_url = 'http://127.0.0.1:8000'
 
 ## Whether to shutdown the proxy when the Hub shuts down.
 #  
@@ -678,9 +678,8 @@ c.JupyterHub.hub_ip = '0.0.0.0'
 #          should be accessed by users.
 #  
 #          .. deprecated: 0.9
-#              Use JupyterHub.bind_url
-#  Default: 8000
-c.JupyterHub.port = 8000
+# c.JupyterHub.port = 8000
+c.ConfigurableHTTPProxy.api_url = 'http://127.0.0.1:8001'
 
 ## DEPRECATED since version 0.8 : Use ConfigurableHTTPProxy.api_url
 #  Default: ''
