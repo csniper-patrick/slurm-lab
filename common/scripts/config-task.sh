@@ -18,7 +18,7 @@ ${SYS_PYTHON} -m venv /opt/jupyterhub/
 # Install jupyterlab-slurm extension (try pip first, fallback to git)
 /opt/jupyterhub/bin/python3 -m pip install jupyterlab-slurm || /opt/jupyterhub/bin/python3 -m pip install git+https://github.com/NERSC/jupyterlab-slurm.git
 # Install jupyterhub-moss extension
-/opt/jupyterhub/bin/python3 -m pip install jupyterhub-moss>=10.0.0
+/opt/jupyterhub/bin/python3 -m pip install jupyterhub-moss>=10.0.0 || /opt/jupyterhub/bin/python3 -m pip install git+https://github.com/silx-kit/jupyterhub_moss.git
 # Install jupyter-ai extension
 /opt/jupyterhub/bin/python3 -m pip install jupyter-ai
 # Install bash kernel for Jupyter
