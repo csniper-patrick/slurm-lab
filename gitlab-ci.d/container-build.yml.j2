@@ -193,7 +193,12 @@ test-amd64:
   <<: *image-testing
   variables:
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
-    COMPOSE_FILE: compose.ci.yml
+    COMPOSE_FILE: compose.yml
+    MODE: ci
+    COMPOSE_PROFILES: ci
+    SERVICE_CONDITION: service_started
+    DISABLE_HEALTHCHECK: 'true'
+    COMPUTE_REPLICAS: '0'
   tags:
     - saas-linux-small-amd64
   needs:
@@ -210,7 +215,12 @@ test-arm64:
   <<: *image-testing
   variables:
     IMAGE_TAG: "${CI_REGISTRY_IMAGE}/slurm-lab:${CI_COMMIT_SHORT_SHA}-${DISTRO}-{{ slurm_ver }}"
-    COMPOSE_FILE: compose.ci.yml
+    COMPOSE_FILE: compose.yml
+    MODE: ci
+    COMPOSE_PROFILES: ci
+    SERVICE_CONDITION: service_started
+    DISABLE_HEALTHCHECK: 'true'
+    COMPUTE_REPLICAS: '0'
   tags:
     - saas-linux-small-arm64
   needs:

@@ -8,7 +8,10 @@ x-database-volumes: &database-volumes
 # choose the image you want to use. 
 # go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
 x-lab-image: &lab-image
-  image: ${IMAGE:-docker.io/csniper/slurm-lab:${TAG:-latest}}
+  image: ${IMAGE:-${IMAGE_TAG:-docker.io/csniper/slurm-lab:${TAG:-latest}}}
+  uts: "private"
+  cap_add:
+    - ALL
 
 x-master-container: &master-container
   <<: *lab-image
@@ -20,9 +23,10 @@ x-master-container: &master-container
     - ./.env
   healthcheck:
     test: "systemctl is-active slurmctld"
+    disable: ${DISABLE_HEALTHCHECK:-false}
   depends_on:
-      acct-db:
-        condition: service_healthy
+    acct-db:
+      condition: ${SERVICE_CONDITION:-service_healthy}
 
 x-compute-container: &compute-container
   <<: *lab-image
@@ -34,22 +38,22 @@ x-compute-container: &compute-container
   volumes: *common-volumes
   depends_on:
     master-1:
-      condition: service_healthy
+      condition: ${SERVICE_CONDITION:-service_healthy}
     master-2:
-      condition: service_healthy
+      condition: ${SERVICE_CONDITION:-service_healthy}
 
-# Uncomment the following templates for second cluster
-# x-lyoko-volumes: &lyoko-volumes
-#   - homedir:/home
+# Second cluster (Lyoko) templates
+x-lyoko-volumes: &lyoko-volumes
+  - homedir:/home
 
-# x-lyoko-container: &lyoko-container
-#   <<: *lab-image
-#   privileged: true
-#   env_file:
-#     - ./.env-lyoko
-#   networks:
-#     - default
-#   volumes: *lyoko-volumes
+x-lyoko-container: &lyoko-container
+  <<: *lab-image
+  privileged: true
+  env_file:
+    - ./.env-lyoko
+  networks:
+    - default
+  volumes: *lyoko-volumes
 
 volumes:
   spool-slurmctld:
@@ -64,11 +68,13 @@ services:
     image: mariadb:lts
     container_name: slurm-lab-db-1
     hostname: slurm-lab-db-1
+    uts: "private"
     volumes: *database-volumes
     env_file:
       - ./.env
     healthcheck:
       test: "healthcheck.sh --su-mysql --connect --innodb_initialized"
+      disable: ${DISABLE_HEALTHCHECK:-false}
   
   master-1:
     <<: *master-container
@@ -84,9 +90,10 @@ services:
     <<: *compute-container
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: ${COMPUTE_REPLICAS:-4}
     healthcheck:
       test: "systemctl is-active slurmd"
+      disable: ${DISABLE_HEALTHCHECK:-false}
 
   client:
     <<: *compute-container
@@ -96,30 +103,42 @@ services:
       - "${PORT:-8080}:80"
     healthcheck:
       test: "systemctl is-active jupyter-hub && systemctl is-active nginx"
+      disable: ${DISABLE_HEALTHCHECK:-false}
       
-  # Uncomment the following templates for second cluster
-  # master-lyoko:
-  #   <<: *lyoko-container
-  #   container_name: slurm-lab-master-lyoko
-  #   hostname: slurm-lab-master-lyoko
-  #   healthcheck:
-  #     test: "systemctl is-active slurmctld"
-  #   depends_on:
-  #     master-1:
-  #       condition: service_healthy
-  #     master-2:
-  #       condition: service_healthy
+  # Second cluster controller (included in 'ci' profile to test multi-cluster/federation initialization)
+  master-lyoko:
+    <<: *lyoko-container
+    container_name: slurm-lab-master-lyoko
+    hostname: slurm-lab-master-lyoko
+    profiles:
+      - lyoko
+      - ci
+      - all
+    healthcheck:
+      test: "systemctl is-active slurmctld"
+      disable: ${DISABLE_HEALTHCHECK:-false}
+    depends_on:
+      master-1:
+        condition: ${SERVICE_CONDITION:-service_healthy}
+      master-2:
+        condition: ${SERVICE_CONDITION:-service_healthy}
 
-  # compute-lyoko:
-  #   <<: *lyoko-container
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #   healthcheck:
-  #     test: "systemctl is-active slurmd"
-  #   depends_on:
-  #     master-lyoko:
-  #       condition: service_healthy
+  # compute-lyoko is intentionally omitted from the 'ci' profile to conserve resources;
+  # CI tests focus on controller and service initialization with compute workers scaled to 0.
+  compute-lyoko:
+    <<: *lyoko-container
+    profiles:
+      - lyoko
+      - all
+    deploy:
+      mode: replicated
+      replicas: ${COMPUTE_LYOKO_REPLICAS:-1}
+    healthcheck:
+      test: "systemctl is-active slurmd"
+      disable: ${DISABLE_HEALTHCHECK:-false}
+    depends_on:
+      master-lyoko:
+        condition: ${SERVICE_CONDITION:-service_healthy}
 
 networks:
   default: {}
