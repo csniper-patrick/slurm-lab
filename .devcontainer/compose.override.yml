@@ -1,4 +1,4 @@
 services:
   client:
     volumes:
-      - ..:/root/slurm-lab
+      - .:/root/slurm-lab
