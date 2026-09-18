@@ -11,7 +11,7 @@ This project provides an easy way to set up a complete Slurm cluster environment
 *   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12/13).
 *   **Flexible Authentication**: Choose between `auth/munge` (default) and `auth/slurm` for cluster authentication.
 *   **Customizable**: Easily configured through a `.env` file.
-*   **Federation & Multi Cluster**: Supports federated and multi-cluster environment can be enable but simply uncomment the relevant section in `compose.yml`.
+*   **Federation & Multi Cluster**: Supports federated and multi-cluster environments out of the box using the built-in `lyoko` Compose profile (e.g., `make up COMPOSE_PROFILES=lyoko` or `podman compose --profile lyoko up -d`).
 *   **Scalable**: Compute nodes can be scaled up or down on the fly.
 *   **Rootless Podman Integration**: Seamlessly run rootless OCI containers using Podman directly inside Slurm jobs using a custom staging mechanism.
 
@@ -101,10 +101,19 @@ If you want to modify the project or build the container images locally, follow 
         docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
     ```
 3.  **Build and start the cluster:**
-    Use the `compose.dev.yml` file, which is configured to build the images from the local source code.
+    Local images should first be built with `make <distro>` (e.g., `make el10`). Run `make dev` or set `MODE=dev` with Compose to start the cluster:
     ```sh
-    podman compose -f compose.dev.yml up -d --build
+    make dev
+    # Or directly with compose:
+    MODE=dev podman compose up -d
     ```
+
+### Developing with VS Code Dev Containers
+
+You can develop inside the Slurm cluster directly using VS Code Dev Containers:
+1. Install the **Dev Containers** extension in VS Code.
+2. Run **Dev Containers: Reopen in Container** from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+3. VS Code will spin up the cluster services and attach directly into the `client` container with the workspace mounted at `/root/slurm-lab` and configured tooling ready.
 
 ## Makefile
 
@@ -112,6 +121,7 @@ This project includes a `Makefile` that simplifies building images and managing 
 
 *   **`make build`**: Builds all container images for the available distributions (e.g., `el8`, `el9`, `deb12`, `deb13`). This is the default target and is the primary command for building the cluster components.
 *   **`make <distro>`**: Builds a specific image, e.g., `make el9`.
+*   **`make ci`**: Starts the cluster in CI mode (`MODE=ci`) to test controller and service initialization locally.
 *   **`make clean`**: Removes generated files, including JWT keys, ensuring a clean slate for rebuilding.
 *   **`make prune`**: Prunes unused container images and volumes, keeping the local system clean.
 
@@ -119,9 +129,10 @@ This project includes a `Makefile` that simplifies building images and managing 
 
 1.  **Setup/Prerequisites**: Run `make` (or `make all`) to ensure secrets are generated and all necessary container images are built for various operating system targets.
 2.  **Deployment**: Run `make up` to start the entire system stack in detached mode, bringing up all services defined in `compose.yml`.
-3.  **Development**: Run `make dev` for a local, development-focused startup using `compose.dev.yml`.
-4.  **Teardown**: Run `make down` to gracefully stop and remove the running services.
-5.  **Cleanup**: Run `make clean` to remove generated key material.
+3.  **Development**: Run `make dev` (or `make up MODE=dev`) for a local, development-focused startup using `compose.yml`.
+4.  **CI Testing**: Run `make ci` (or `make up MODE=ci`) to test the CI configuration locally with Compose.
+5.  **Teardown**: Run `make down` to gracefully stop and remove the running services.
+6.  **Cleanup**: Run `make clean` to remove generated key material.
 
 The `Makefile` handles the dependency chain, automatically generating required JWT keys if they are missing before attempting any build.
 
@@ -217,6 +228,37 @@ This is useful for:
 1. **Running multiple stacks concurrently**: Avoids port binding conflicts when starting more than one stack.
 2. **Shared environments**: Allows running the stack when port `8080` is already in use by another application.
 3. **Dynamic port allocation (Special Usage)**: Setting `PORT=0` (e.g., `PORT=0 make up` or `PORT=0 make dev`) instructs the system to find and bind to a random available port. The Makefile will automatically detect and print the actual allocated port once the services are started.
+
+### Multi-Cluster & Federation (Lyoko Profile)
+
+The lab includes built-in support for a secondary cluster named **`lyoko`** to test multi-cluster configurations and federations sharing the primary accounting database (`slurmdbd`).
+
+Multi-cluster services are activated using the Compose profile **`lyoko`**, without requiring manual edits to compose files:
+
+*   **Using `make`**:
+    ```sh
+    # Production / default mode:
+    make up COMPOSE_PROFILES=lyoko
+
+    # Development mode (local images):
+    make dev COMPOSE_PROFILES=lyoko
+    ```
+
+*   **Using Compose directly**:
+    ```sh
+    podman compose --profile lyoko up -d
+
+    # In development mode:
+    MODE=dev podman compose --profile lyoko up -d
+    ```
+
+*   **Via `.env`**:
+    Add `COMPOSE_PROFILES=lyoko` to your `.env` file to always include the Lyoko cluster.
+
+When the `lyoko` profile is active:
+*   `master-lyoko` (`slurm-lab-master-lyoko`) runs as the secondary cluster controller, configured via `.env-lyoko`.
+*   `compute-lyoko` runs as the secondary cluster compute worker (replicas configurable via `COMPUTE_LYOKO_REPLICAS`, default: `1`).
+*   See `tutorials/Multi-Cluster & Federation.ipynb` for detailed exercises on cluster communication and federation commands.
 
 ## Known Issues
 

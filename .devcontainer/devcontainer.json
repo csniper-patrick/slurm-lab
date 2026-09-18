@@ -1,0 +1,28 @@
+{
+	"name": "Slurm Lab (Client)",
+	"dockerComposeFile": [
+		"../compose.yml",
+		"compose.override.yml"
+	],
+	"service": "client",
+	"workspaceFolder": "/root/slurm-lab",
+	"overrideCommand": false,
+	"shutdownAction": "stopCompose",
+	"remoteUser": "root",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"python.defaultInterpreterPath": "/opt/jupyterhub/bin/python"
+			},
+			"extensions": [
+				"ms-python.python",
+				"redhat.ansible",
+				"timonwong.shellcheck",
+				"ms-toolsai.jupyter",
+				"google.colab"
+			]
+		}
+	}
+}
+

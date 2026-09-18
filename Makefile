@@ -13,6 +13,44 @@ endif
 PORT ?= 8080
 export PORT
 
+# Mode configuration: prod (default), dev, ci
+# Can be overridden via command line or environment variable, e.g.:
+#   make up MODE=dev
+#   make dev
+ifneq ($(filter dev,$(MAKECMDGOALS)),)
+    MODE ?= dev
+else ifneq ($(filter ci,$(MAKECMDGOALS)),)
+    MODE ?= ci
+else
+    MODE ?= prod
+endif
+
+ifeq ($(MODE),dev)
+    TAG ?= el10
+    IMAGE ?= localhost/slurm-lab:$(TAG)
+    SERVICE_CONDITION ?= service_healthy
+    DISABLE_HEALTHCHECK ?= false
+    COMPUTE_REPLICAS ?= 4
+else ifeq ($(MODE),ci)
+    IMAGE ?= $(IMAGE_TAG)
+    COMPOSE_PROFILES ?= ci
+    SERVICE_CONDITION ?= service_started
+    DISABLE_HEALTHCHECK ?= true
+    COMPUTE_REPLICAS ?= 0
+else
+    # prod / default mode
+    TAG ?= latest
+    IMAGE ?= docker.io/csniper/slurm-lab:$(TAG)
+    SERVICE_CONDITION ?= service_healthy
+    DISABLE_HEALTHCHECK ?= false
+    COMPUTE_REPLICAS ?= 4
+endif
+
+export MODE TAG IMAGE SERVICE_CONDITION DISABLE_HEALTHCHECK COMPUTE_REPLICAS
+ifdef COMPOSE_PROFILES
+export COMPOSE_PROFILES
+endif
+
 # Default distributions to build.
 # Can be overridden from the command line, e.g.:
 DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containerfile 2>/dev/null)))
@@ -20,7 +58,7 @@ DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containe
 # JWT key files that need to be generated.
 SECRET_FILES = common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks
 
-.PHONY: all build clean prune $(DISTROS) up dev down
+.PHONY: all build clean prune $(DISTROS) up dev ci down
 .DEFAULT_GOAL := all
 
 # Build all specified distro images.
@@ -57,7 +95,7 @@ prune:
 
 # Start/stop slurm-lab stack using compose.
 up:
-	@echo "Starting slurm-lab stack..."
+	@echo "Starting slurm-lab stack ($(MODE) mode)..."
 	@$(PODMAN) compose up -d --remove-orphans --force-recreate
 	@echo "Detecting web port..."
 	@actual_port=$$($(PODMAN) port slurm-lab-client 80 2>/dev/null | head -n1 | awk -F: '{print $$NF}' | tr -d '[:space:]') ; \
@@ -67,16 +105,9 @@ up:
 		echo "Web interface is available at http://localhost:$(PORT)"; \
 	fi
 
-dev:
-	@echo "Starting slurm-lab stack (localhost)..."
-	@$(PODMAN) compose -f compose.dev.yml up -d --remove-orphans --force-recreate
-	@echo "Detecting web port..."
-	@actual_port=$$($(PODMAN) port slurm-lab-client 80 2>/dev/null | head -n1 | awk -F: '{print $$NF}' | tr -d '[:space:]') ; \
-	if [ -n "$$actual_port" ]; then \
-		echo "Web interface is available at http://localhost:$$actual_port"; \
-	else \
-		echo "Web interface is available at http://localhost:$(PORT)"; \
-	fi
+dev: up
+
+ci: up
 
 down:
 	@echo "Stopping slurm-lab stack..."

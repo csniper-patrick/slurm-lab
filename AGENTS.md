@@ -22,9 +22,11 @@ The fastest way to get the Slurm lab running is by using the pre-built images fr
 
 1.  **Start the cluster:**
     ```sh
+    make up
+    # Or directly:
     podman compose up -d
     ```
-    *(Use `docker-compose` if you are using Docker).*
+    *(Use `docker compose` or `docker-compose` if you are using Docker).*
 
 2.  **Select an image tag (Optional):**
     By default, the cluster uses the `latest` tag (Rocky Linux 9). You can use a different image by specifying the `TAG` in the `.env` file. For example, to use the Debian-based image, add this line to your `.env` file:
@@ -56,11 +58,47 @@ If you want to modify the project or build the container images locally, you can
     make deb12
     ```
 
-3.  **Start the cluster with local images:**
-    Use the `compose.dev.yml` file, which is configured to build the images from the local source code.
+3.  **Start the cluster in development mode:**
+    Local images should first be built with `make <distro>` (e.g., `make el10`). Run `make dev` or set `MODE=dev` with Compose to start the cluster:
     ```sh
-    podman compose -f compose.dev.yml up -d --build
+    make dev
+    # Or directly with compose:
+    MODE=dev podman compose up -d
     ```
+
+## Multi-Cluster & Federation (Lyoko Profile)
+
+The lab supports a secondary cluster named **`lyoko`** to test Slurm multi-cluster configurations and federations that share the primary accounting database (`slurmdbd`).
+
+Multi-cluster services are managed using the Compose profile **`lyoko`**, eliminating the need to manually edit compose files:
+
+*   **Starting with `make`:**
+    ```sh
+    # In production / default mode:
+    make up COMPOSE_PROFILES=lyoko
+
+    # In development mode (local images):
+    make dev COMPOSE_PROFILES=lyoko
+    ```
+
+*   **Starting with `podman compose` directly:**
+    ```sh
+    podman compose --profile lyoko up -d
+    # Or in development mode:
+    MODE=dev podman compose --profile lyoko up -d
+    ```
+
+*   **Starting via `.env`:**
+    Add or uncomment in `.env`:
+    ```sh
+    COMPOSE_PROFILES=lyoko
+    ```
+    Then run `make up` or `make dev` as normal.
+
+### Secondary Cluster Architecture
+*   **`master-lyoko` (`slurm-lab-master-lyoko`)**: Slurm controller for the `lyoko` cluster, configured via `.env-lyoko`.
+*   **`compute-lyoko`**: Compute node for the `lyoko` cluster. The replica count can be configured using `COMPUTE_LYOKO_REPLICAS` (default: `1`).
+*   See `tutorials/Multi-Cluster & Federation.ipynb` for hands-on exercises and federation verification.
 
 ## Core Features & Configuration
 
@@ -69,23 +107,32 @@ If you want to modify the project or build the container images locally, you can
 *   **Metrics Integration:** Prometheus-compatible `/metrics` endpoints are available. Configure `MetricsType=metrics/openmetrics` and `MetricsParameters=ignore_private_data` in `slurm.conf` to enable them without compromising `PrivateData`.
 *   **Automated User Management:** Integrated PAM modules automatically create Slurm accounts and users upon first login.
 *   **Interactive Environment:** JupyterHub is pre-installed on the client node for a seamless interactive experience.
+*   **Federation & Multi-Cluster:** Test multi-cluster configurations and federations using the built-in `lyoko` Compose profile.
 *   **Comprehensive Tutorials:** A rich set of Jupyter notebooks and bash scripts in the `tutorials/` directory covers basic usage, MPI jobs, job dependencies, and administrative tasks.
 
 ## Running Tests
 
-The project has a CI/CD pipeline defined in `.gitlab-ci.yml` that runs tests. To run the tests locally, you would need to replicate the steps in the `test` stage of the CI pipeline. The `gitlab-ci.d/test.yml` file contains the test definitions.
+The project has a CI/CD pipeline defined in `.gitlab-ci.yml` that runs tests.
+*   To test the CI stack locally with Compose:
+    ```sh
+    make ci
+    # Or directly:
+    MODE=ci podman compose up -d
+    ```
+*   The `gitlab-ci.d/test.yml` and `gitlab-ci.d/container-build.yml.j2` files contain the full CI pipeline and test definitions.
+*   **CI Topology Intent:** In CI mode (`MODE=ci` / `COMPOSE_PROFILES=ci`), only controllers and service daemons are tested (`master-lyoko` is included in the `ci` profile to verify multi-cluster/federation initialization, while compute workers `compute` and `compute-lyoko` are scaled to 0 or omitted to conserve CI resources).
 
 ## Development Conventions
 
-*   **Containerization:** The project is fully containerized, and the environment is defined in `compose.yml` and `compose.dev.yml`.
-*   **Configuration:** The cluster is configured through the `.env` file.
+*   **Containerization:** The project is fully containerized, defined in a single unified `compose.yml` supporting `MODE=prod`, `MODE=dev`, and `MODE=ci`, alongside Compose profiles (such as `lyoko`).
+*   **Configuration:** The cluster is configured through the `.env` file (and `.env-lyoko` for the secondary cluster).
 *   **CI/CD:** The `.gitlab-ci.yml` file defines the CI/CD pipeline for building, testing, and deploying the container images.
 *   **Submodules:** All core dependencies (Slurm, Open MPI, Slop, JSON Web Key Generator) are included as Git submodules located in the `modules/` directory.
-*   **Building:** The `Makefile` provides a convenient way to build the container images for different distributions.
+*   **Building:** The `Makefile` provides a convenient way to build container images for different distributions and run different cluster modes.
 *   **Documentation:** Core utility scripts and tutorial scripts are systematically documented with descriptive headers and inline comments.
 *   **Branching:** The CI pipeline is configured to build and tag images based on the Git branch.
 
-## Antigravity Coding Rules
+## Agent Coding Rules
 
 These rules apply to every task in this project unless explicitly overridden.
 Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
@@ -136,3 +183,4 @@ Bias: caution over speed on non-trivial work. Use judgment on trivial tasks.
     *   "Completed" is wrong if anything was skipped silently.
     *   "Pipelines pass" is wrong if any checks were bypassed.
     *   Default to surfacing system errors and uncertainty, not hiding them.
+
