@@ -1,165 +1,174 @@
 # Slurm Lab
 
-This project provides an easy way to set up a complete Slurm cluster environment on your personal computer using containers. It's perfect for testing, learning, and development purposes.
-
-[Slurm](https://slurm.schedmd.com/) is an open-source, fault-tolerant, and highly scalable cluster management and job scheduling system for Linux clusters.
+Slurm Lab sets up a Slurm cluster environment on your computer with containers. You can use this environment to test, learn, and develop Slurm workflows. [Slurm](https://slurm.schedmd.com/) is an open-source workload manager that manages clusters and schedules jobs on Linux systems.
 
 ## Features
 
-*   **Complete Cluster Environment**: Sets up a multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
-*   **Slurm REST API**: The Slurm REST API (`slurmrestd`) is enabled for programmatic access to the cluster.
-*   **Choice of OS**: Supports different base OS for the cluster nodes (e.g., Rocky Linux 8/9, Debian 12/13).
-*   **Flexible Authentication**: Choose between `auth/munge` (default) and `auth/slurm` for cluster authentication.
-*   **Customizable**: Easily configured through a `.env` file.
-*   **Federation & Multi Cluster**: Supports federated and multi-cluster environments out of the box using the built-in `lyoko` Compose profile (e.g., `make up COMPOSE_PROFILES=lyoko` or `podman compose --profile lyoko up -d`).
-*   **Scalable**: Compute nodes can be scaled up or down on the fly.
-*   **Rootless Podman Integration**: Seamlessly run rootless OCI containers using Podman directly inside Slurm jobs using a custom staging mechanism.
+The cluster environment includes these capabilities:
 
-### Plugins & Integration
-* Includes a JupyterHub instance on the client node for an interactive environment. The following plugins are included:
-  * [**jupyter-slurm**](https://github.com/NERSC/jupyterlab-slurm.git) is a dashboard plugin for slurm interaction via jupyterhub
-  * [**jupyter-moss**](https://github.com/silx-kit/jupyterhub_moss) is a spawner, when enabled, you jupyterhub server session will start in a slurm job. 
-* [**slop**](https://github.com/buzh/slop): Includes the `slop` utility for a real-time, `top`-like view of Slurm jobs and cluster load.
+* Multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
+* Slurm REST API (`slurmrestd`) enabled for programmatic cluster access.
+* Multiple Linux distributions for node images, including Rocky Linux 8, Rocky Linux 9, Debian 12, and Debian 13.
+* Authentication with `auth/munge` by default or `auth/slurm`.
+* Configuration controlled through the `.env` file.
+* Multi-cluster and federation support with the `lyoko` Compose profile.
+* Dynamic scaling for compute nodes.
+* Rootless OCI container execution with Podman inside Slurm jobs.
 
+### Plugins and Integrations
+
+The client node includes JupyterHub and several tools:
+
+* [jupyter-slurm](https://github.com/NERSC/jupyterlab-slurm.git) provides a dashboard interface for Slurm in JupyterLab.
+* [jupyter-moss](https://github.com/silx-kit/jupyterhub_moss) starts JupyterHub user sessions as jobs on Slurm compute nodes.
+* [slop](https://github.com/buzh/slop) displays Slurm jobs and cluster load in real time in the terminal.
 
 ## Cluster Components
 
-The cluster consists of the following services, defined in the `compose.yml` file:
+The `compose.yml` file defines five primary services:
 
-1.  **`controller`**: Runs the Slurm control daemon (`slurmctld`). A second controller `controller2` is also available for high-availability testing.
-2.  **`slurmdbd`**: Runs the Slurm Database Daemon (`slurmdbd`) for accounting.
-3.  **`mariadb`**: A MariaDB database server for Slurm accounting.
-4.  **`client`**: A submission node that also hosts JupyterHub and `slurmrestd`. This is your main entry point for interacting with the cluster.
-5.  **`compute`**: N (default 4) compute nodes running the `slurmd` daemon.
+1. `controller` runs the primary Slurm control daemon (`slurmctld`). An optional `controller2` service provides high-availability testing.
+2. `slurmdbd` runs the Slurm Database Daemon (`slurmdbd`) for job accounting.
+3. `mariadb` runs the MariaDB database server for Slurm accounting storage.
+4. `client` runs the submission node, JupyterHub, and `slurmrestd`.
+5. `compute` runs worker nodes that execute the `slurmd` daemon.
 
 ## Getting Started
 
+You can run the Slurm cluster locally with minimal setup. First make sure that your host machine has a compatible container engine installed. Then choose whether to start the cluster with pre-built container images or build images from source.
+
 ### Prerequisites
 
-You need a container engine that supports the Compose specification. The recommended setup is **Podman** with **Docker Compose**.
+You need a container engine that supports the Compose specification. The primary configuration uses Podman with Docker Compose. You can also run the environment with standard Docker tools.
 
--   **Recommended:**
-    -   [Podman](https://podman.io/docs/installation)
-    -   [Docker Compose](https://docs.docker.com/compose/install/) (can be used with Podman)
-    -   [Setting Podman to use Docker-compose](https://podman-desktop.io/docs/compose/setting-up-compose)
-    -   *Optional:* [Podman Desktop](https://podman-desktop.io/docs/installation) for a graphical interface.
+The recommended tools are:
+* [Podman](https://podman.io/docs/installation)
+* [Docker Compose](https://docs.docker.com/compose/install/)
+* [Instructions for Podman with Docker Compose](https://podman-desktop.io/docs/compose/setting-up-compose)
+* [Podman Desktop](https://podman-desktop.io/docs/installation) if you need a graphical interface
 
--   **Alternatives:**
-    -   [Docker Desktop](https://docs.docker.com/desktop/) (includes Docker and Docker Compose).
-    -   [Podman Compose](https://github.com/containers/podman-compose#installation) (less recommended due to container dependency issues).
+Alternative tools are:
+* [Docker Desktop](https://docs.docker.com/desktop/)
+* [Podman Compose](https://github.com/containers/podman-compose#installation)
 
-### Quick Start (Using Pre-built Images)
+### Quick Start with Pre-built Images
 
-This is the fastest way to get your Slurm lab running using images from [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab).
+You can start the cluster with pre-built images from [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab). This is the fastest way to get a running cluster. Follow these steps to start the cluster:
 
-1.  **Clone the project:**
-    ```sh
-    git clone https://gitlab.com/CSniper/slurm-lab.git
-    cd slurm-lab
-    ```
+1. Clone the project repository:
+   ```sh
+   git clone https://gitlab.com/CSniper/slurm-lab.git
+   cd slurm-lab
+   ```
 
-2.  **Start the cluster:**
-    ```sh
-    podman compose up -d
-    ```
-    *(Use `docker-compose` if you are using Docker).*
+2. Start the cluster services:
+   ```sh
+   podman compose up -d
+   ```
+   If you use Docker, run:
+   ```sh
+   docker compose up -d
+   ```
 
-3.  **Select an image tag (Optional):**
-    By default, the cluster uses the `latest` tag (Rocky Linux 9). You can use a different image by specifying the `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
-    For example, to use the Debian-based image, add this line to your `.env` file:
-    ```
-    TAG=latest-deb
-    ```
-    If you've pushed the image to your own registry, you could use variable `IMAGE` to specify the full name+tag. eg.
-    ```
-    IMAGE=harbor.example.com/slurm/slurm-lab:latest
-    ```
-    When variable `IMAGE` is defined, `TAG` is ignored.
+3. Optional: Select an image tag.
+   The cluster uses the `latest` tag (Rocky Linux 9) by default. You can specify a different image by setting `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
+   If you want to use the Debian image, add this line to `.env`:
+   ```sh
+   TAG=latest-deb
+   ```
+   If you use a private registry, set the `IMAGE` variable to the complete image reference:
+   ```sh
+   IMAGE=harbor.example.com/slurm/slurm-lab:latest
+   ```
+   When you set `IMAGE`, Compose ignores the `TAG` variable.
 
-### Local Development (Building from Source)
+### Local Development from Source
 
-If you want to modify the project or build the container images locally, follow these steps.
+You can build custom container images from source code. This workflow is useful when you modify Slurm source code, build scripts, or configuration files. Follow these steps to build and launch the cluster:
 
-1.  **Prepare the project (clone with submodules):**
-    If you are cloning the project for the first time:
-    ```sh
-    git clone --recurse-submodules https://gitlab.com/CSniper/slurm-lab.git
-    cd slurm-lab
-    ```
-    If you have already cloned the project without submodules:
-    ```sh
-    cd slurm-lab
-    git submodule update --init --recursive
-    ```
-2.  **Create keys required for the build:**
-    ```bash
-    mkdir -pv common/secrets
-    podman run --rm -it \
-        -v ./modules/json-web-key-generator:/json-web-key-generator \
-        -v ./common/secrets:/opt \
-        -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
-        docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
-    ```
-3.  **Build and start the cluster:**
-    Local images should first be built with `make <distro>` (e.g., `make el10`). Run `make dev` or set `MODE=dev` with Compose to start the cluster:
-    ```sh
-    make dev
-    # Or directly with compose:
-    MODE=dev podman compose up -d
-    ```
+1. Clone the project with submodules:
+   ```sh
+   git clone --recurse-submodules https://gitlab.com/CSniper/slurm-lab.git
+   cd slurm-lab
+   ```
+   If you already cloned the repository without submodules, run:
+   ```sh
+   cd slurm-lab
+   git submodule update --init --recursive
+   ```
+
+2. Generate the cryptographic keys for the build:
+   ```bash
+   mkdir -pv common/secrets
+   podman run --rm -it \
+       -v ./modules/json-web-key-generator:/json-web-key-generator \
+       -v ./common/secrets:/opt \
+       -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
+       docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
+   ```
+
+3. Build the container images and start the cluster:
+   Build your target image with `make <distro>`, for example `make el10`.
+   Start the development cluster:
+   ```sh
+   make dev
+   ```
+   If you use Compose directly, run:
+   ```sh
+   MODE=dev podman compose up -d
+   ```
 
 ### Developing with VS Code Dev Containers
 
-You can develop inside the Slurm cluster directly using VS Code Dev Containers:
-1. Install the **Dev Containers** extension in VS Code.
-2. Run **Dev Containers: Reopen in Container** from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
-3. VS Code will spin up the cluster services and attach directly into the `client` container with the workspace mounted at `/root/slurm-lab` and configured tooling ready.
+You can develop inside the cluster with VS Code Dev Containers. The container workspace mounts the repository and provides preconfigured tools. Follow these steps to attach to the environment:
+
+1. Install the Dev Containers extension in VS Code.
+2. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`).
+3. Run `Dev Containers: Reopen in Container`.
+4. VS Code starts the cluster services and opens a shell inside the `client` container at `/root/slurm-lab`.
 
 ## Makefile
 
-This project includes a `Makefile` that simplifies building images and managing the development environment. It automates several complex steps:
+The `Makefile` automates image builds and cluster operations. It runs required prerequisite steps, such as key generation, before starting any build. Build logs for each distribution are saved to `*-img-build.log` in the root directory.
 
-*   **`make build`**: Builds all container images for the available distributions (e.g., `el8`, `el9`, `deb12`, `deb13`). This is the default target and is the primary command for building the cluster components.
-*   **`make <distro>`**: Builds a specific image, e.g., `make el9`.
-*   **`make ci`**: Starts the cluster in CI mode (`MODE=ci`) to test controller and service initialization locally.
-*   **`make clean`**: Removes generated files, including JWT keys, ensuring a clean slate for rebuilding.
-*   **`make prune`**: Prunes unused container images and volumes, keeping the local system clean.
+The primary build targets are:
+* `make build` builds container images for all supported distributions (`el8`, `el9`, `deb12`, `deb13`).
+* `make <distro>` builds a specific image, for example `make el9`.
+* `make ci` starts the cluster in CI mode (`MODE=ci`) to test controller and service initialization.
+* `make clean` removes generated secret keys and build logs.
+* `make prune` removes unused container images and volumes.
 
-**Workflow Summary:**
+The workflow targets follow this sequence:
+1. Run `make` to generate secret keys and build container images.
+2. Run `make up` to start all services defined in `compose.yml`.
+3. Run `make dev` to start the cluster with locally built images.
+4. Run `make ci` to test the CI configuration locally.
+5. Run `make down` to stop and remove all cluster containers.
+6. Run `make clean` to remove generated keys and build logs.
 
-1.  **Setup/Prerequisites**: Run `make` (or `make all`) to ensure secrets are generated and all necessary container images are built for various operating system targets.
-2.  **Deployment**: Run `make up` to start the entire system stack in detached mode, bringing up all services defined in `compose.yml`.
-3.  **Development**: Run `make dev` (or `make up MODE=dev`) for a local, development-focused startup using `compose.yml`.
-4.  **CI Testing**: Run `make ci` (or `make up MODE=ci`) to test the CI configuration locally with Compose.
-5.  **Teardown**: Run `make down` to gracefully stop and remove the running services.
-6.  **Cleanup**: Run `make clean` to remove generated key material.
-
-The `Makefile` handles the dependency chain, automatically generating required JWT keys if they are missing before attempting any build.
+If required JWT keys do not exist, the `Makefile` creates them before building images.
 
 > [!NOTE]
-> Build logs for each distribution are saved to `*-img-build.log` in the root directory for easier troubleshooting.
-
+> The build process writes logs to `*-img-build.log` in the root directory.
 
 ## Usage
 
+Once the cluster starts, you can interact with Slurm through several interfaces. You can submit jobs via the command line or through web services. You can also monitor cluster state and scale nodes dynamically.
+
 ### Accessing JupyterHub
 
-Once the cluster is running, you can access the JupyterHub environment at [http://localhost:8080/](http://localhost:8080/) (or the configured custom port).
-
-You can log in with one of the following usernames (no password needed): `jeremie`, `aelita`, `yumi`, `ulrich`, `odd`.
-*(These are characters from the show [Code Lyoko](https://en.wikipedia.org/wiki/Code_Lyoko)).*
+When the cluster is running, open [http://localhost:8080/](http://localhost:8080/) in your browser. If you configured a different port, use that port number instead. You can log in without a password with any of these user names: `jeremie`, `aelita`, `yumi`, `ulrich`, or `odd`.
 
 ### Submitting a Slurm Job
 
-You can submit jobs from the terminal within JupyterHub or by using `podman exec`.
+You can submit jobs from the JupyterHub terminal or with `podman exec`. The cluster supports both interactive jobs and batch script submissions. Follow the examples below to run jobs:
 
-**Example using `srun`:**
+To run an interactive job with `srun`:
 ```sh
 podman exec -it slurm-lab-client-1 srun --nodes=1 --ntasks=1 hostname
 ```
 
-**Example using `sbatch`:**
-Create a batch script `my_job.sh`:
+To submit a batch job script with `sbatch`, create `my_job.sh`:
 ```sh
 #!/bin/bash
 #SBATCH --job-name=my_test_job
@@ -170,7 +179,8 @@ Create a batch script `my_job.sh`:
 
 srun hostname
 ```
-Submit the job from the client container:
+
+Copy the script to the client container and submit it:
 ```sh
 podman cp my_job.sh slurm-lab-client-1:/tmp/my_job.sh
 podman exec -it slurm-lab-client-1 sbatch /tmp/my_job.sh
@@ -178,99 +188,94 @@ podman exec -it slurm-lab-client-1 sbatch /tmp/my_job.sh
 
 ### Scaling Compute Nodes
 
-You can easily change the number of active compute nodes. For example, to scale up to 6 nodes:
+You can change the number of active worker nodes while the cluster runs. This allows you to test multi-node jobs with different worker counts. If you want to scale the cluster to six compute nodes, run:
 ```sh
 podman compose up -d --scale compute=6 --no-recreate
 ```
 
 ### Accessing the Slurm REST API
 
-The Slurm REST API is available through the client container. The service is exposed on the host at `localhost:8080/slurm/v0.0.45` (replace `8080` with your custom port if configured).
-
-Please refer to the official documentation for authenticating your requests and for API usage:
--   [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
--   [API Reference](https://slurm.schedmd.com/rest_api.html)
+The client container provides the Slurm REST API at `localhost:8080/slurm/v0.0.45`. If you changed the web port, use that port number instead. Read the official documentation for request authentication and endpoint details:
+* [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
+* [Slurm REST API Reference](https://slurm.schedmd.com/rest_api.html)
 
 ### Slurm Documentation
 
-The official documentation for the version of Slurm installed in the container is available at [http://localhost:8080/doc/](http://localhost:8080/doc/) (replace `8080` with your custom port if configured).
+The client container serves documentation for the installed Slurm version at [http://localhost:8080/doc/](http://localhost:8080/doc/). If you configured a custom web port, replace `8080` with that port number. The local documentation matches the exact build version of Slurm running in your containers.
 
 ## Tutorials
 
-This project includes a set of tutorials in the `tutorials/` directory to help you get started with Slurm and the lab environment. You can access them through the JupyterHub interface.
-
-*   **`Getting Started.ipynb`**: A good starting point for new users.
-*   **`Admin Guide.ipynb`**: Covers administrative tasks and cluster setup.
-*   **`MPI Guide.ipynb`**: Demonstrates how to run MPI jobs.
-*   **`REST API Guide.ipynb`**: Shows how to interact with the Slurm REST API.
-*   **`scrontab Guide.ipynb`**: Explains how to use `scrontab` for scheduling recurring jobs.
-*   **`Multi-Cluster & Federation.ipynb`**: A guide to setting up and using the multi-cluster and federation features.
+The `tutorials/` directory contains interactive tutorial notebooks. You can open these notebooks in the JupyterHub web interface. The tutorials cover basic usage, parallel programming, and cluster administration:
+* `Getting Started.ipynb` introduces basic Slurm commands and job management.
+* `Admin Guide.ipynb` describes administrative tasks and cluster management.
+* `MPI Guide.ipynb` shows how to execute parallel MPI jobs.
+* `REST API Guide.ipynb` explains how to query the Slurm REST API.
+* `scrontab Guide.ipynb` shows how to schedule recurring jobs with `scrontab`.
+* `Multi-Cluster & Federation.ipynb` describes multi-cluster and federation setups.
 
 ## Configuration
 
-You can customize the cluster by setting variables in the `.env` file or passing them as environment variables.
-
-*   `TAG`: The Docker image tag to use (e.g., `latest`, `latest-deb`). See available tags on [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab/tags).
-*   `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_RANDOM_ROOT_PASSWORD`: Required credentials for the MariaDB database.
-*   `AUTHTYPE`: The Slurm authentication plugin. Can be `auth/munge` (default) or `auth/slurm`. Setting it to `auth/slurm` removes the need for the `munge` daemon.
-*   `JUPYTER_SPAWNER`: By default, JupyterLab sessions are spawned inside the `client` container. Set this to `moss` to use the [JupyterHub MOdular Slurm Spawner (moss)](https://github.com/silx-kit/jupyterhub_moss), which runs each JupyterLab session as a Slurm job on a compute node.
-*   `PORT`: Controls the external web interface port mapped to the client node (default: `8080`).
+You can configure the cluster by editing the `.env` file or exporting environment variables. The configuration file sets image tags, credentials, authentication plugins, and port bindings. Changes to `.env` take effect when you restart the cluster services:
+* `TAG` specifies the container image tag from [Docker Hub](https://hub.docker.com/r/csniper/slurm-lab/tags).
+* `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_RANDOM_ROOT_PASSWORD` set database credentials.
+* `AUTHTYPE` sets the Slurm authentication plugin to `auth/munge` or `auth/slurm`.
+* `JUPYTER_SPAWNER` controls how JupyterLab starts. Set this variable to `moss` to run user sessions as Slurm jobs.
+* `PORT` specifies the host port for client web services. The default value is `8080`.
 
 ### Customizing the Web Port
 
-The web interface (JupyterHub, Slurm documentation, and the REST API) is exposed on port `8080` by default. You can customize this by setting the `PORT` variable in your `.env` file or on the command line:
+The client container maps JupyterHub, Slurm documentation, and the REST API to port `8080` by default. You can change this port by setting `PORT` in `.env` or on the command line:
 
 ```sh
 PORT=9000 make up
 ```
 
-This is useful for:
-1. **Running multiple stacks concurrently**: Avoids port binding conflicts when starting more than one stack.
-2. **Shared environments**: Allows running the stack when port `8080` is already in use by another application.
-3. **Dynamic port allocation (Special Usage)**: Setting `PORT=0` (e.g., `PORT=0 make up` or `PORT=0 make dev`) instructs the system to find and bind to a random available port. The Makefile will automatically detect and print the actual allocated port once the services are started.
+You can change the port for three reasons:
+1. To run multiple cluster stacks at the same time without port conflicts.
+2. To avoid conflicts when another local service already uses port `8080`.
+3. To assign a random available port automatically by setting `PORT=0`. When services start, the `Makefile` prints the assigned port.
 
-### Multi-Cluster & Federation (Lyoko Profile)
+### Multi-Cluster and Federation with the Lyoko Profile
 
-The lab includes built-in support for a secondary cluster named **`lyoko`** to test multi-cluster configurations and federations sharing the primary accounting database (`slurmdbd`).
+The project includes an optional secondary cluster named `lyoko`. Both clusters share the primary `slurmdbd` accounting database. You can activate the secondary cluster with the `lyoko` Compose profile:
 
-Multi-cluster services are activated using the Compose profile **`lyoko`**, without requiring manual edits to compose files:
+If you use `make` in production mode:
+```sh
+make up COMPOSE_PROFILES=lyoko
+```
 
-*   **Using `make`**:
-    ```sh
-    # Production / default mode:
-    make up COMPOSE_PROFILES=lyoko
+If you use `make` in development mode:
+```sh
+make dev COMPOSE_PROFILES=lyoko
+```
 
-    # Development mode (local images):
-    make dev COMPOSE_PROFILES=lyoko
-    ```
+If you use Compose directly:
+```sh
+podman compose --profile lyoko up -d
+```
 
-*   **Using Compose directly**:
-    ```sh
-    podman compose --profile lyoko up -d
-
-    # In development mode:
-    MODE=dev podman compose --profile lyoko up -d
-    ```
-
-*   **Via `.env`**:
-    Add `COMPOSE_PROFILES=lyoko` to your `.env` file to always include the Lyoko cluster.
+If you want the `lyoko` profile enabled permanently, add this line to `.env`:
+```sh
+COMPOSE_PROFILES=lyoko
+```
 
 When the `lyoko` profile is active:
-*   `master-lyoko` (`slurm-lab-master-lyoko`) runs as the secondary cluster controller, configured via `.env-lyoko`.
-*   `compute-lyoko` runs as the secondary cluster compute worker (replicas configurable via `COMPUTE_LYOKO_REPLICAS`, default: `1`).
-*   See `tutorials/Multi-Cluster & Federation.ipynb` for detailed exercises on cluster communication and federation commands.
+* `master-lyoko` runs the controller for the `lyoko` cluster and reads configuration from `.env-lyoko`.
+* `compute-lyoko` runs worker nodes for the `lyoko` cluster. Set `COMPUTE_LYOKO_REPLICAS` to change worker counts.
+* `tutorials/Multi-Cluster & Federation.ipynb` provides exercises for multi-cluster and federation features.
 
 ## Known Issues
 
-*   The `module` command is not available in Jupyter Notebooks running on the Debian based image.
+The Debian container image does not support the `module` command inside Jupyter notebooks. If you need environment modules inside notebooks, use the Enterprise Linux images. Work is ongoing to enable environment modules across all supported distributions.
+
 ## Roadmap
 
-*   Feature testing for Lua scripts (burst buffer, job submission plugins, routing).
+Future releases will add tests for custom Slurm Lua scripts. These tests will cover burst buffers, job submission plugins, and job routing. We also plan to expand automated integration tests for rootless Podman execution.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to open an issue or submit a merge request on [GitLab](https://gitlab.com/CSniper/slurm-lab).
+We welcome contributions to this project. You can report bugs, suggest features, or submit code changes. Open an issue or submit a merge request on [GitLab](https://gitlab.com/CSniper/slurm-lab).
 
 ## License
 
-This project is licensed under the [BSD 3-Clause License](./LICENSE).
+This project uses the [BSD 3-Clause License](./LICENSE). You can read the full license text in the `LICENSE` file in the root directory. Third-party components retain their original licenses as described in their respective submodules.
