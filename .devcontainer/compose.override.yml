@@ -1,4 +1,10 @@
 services:
+  compute:
+    volumes:
+      - .:/root/slurm-lab
+  compute-lyoko:
+    volumes:
+      - .:/root/slurm-lab
   client:
     volumes:
       - .:/root/slurm-lab
