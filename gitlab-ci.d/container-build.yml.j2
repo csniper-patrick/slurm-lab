@@ -1,13 +1,9 @@
 generate-secrets:
   stage: build
-  image: docker.io/library/maven:3.8.7-openjdk-18-slim
+  image: quay.io/rockylinux/rockylinux:10
   script:
-    - cd ${CI_PROJECT_DIR}/modules/json-web-key-generator
-    - mvn package
-    - cd ${CI_PROJECT_DIR}
     - mkdir -p ${CI_PROJECT_DIR}/common/secrets
-    - java -jar ${CI_PROJECT_DIR}/modules/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type RSA --size 2048 --algorithm RS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/jwks.json --pubKeyOutput ${CI_PROJECT_DIR}/common/secrets/jwks.pub.json
-    - java -jar ${CI_PROJECT_DIR}/modules/json-web-key-generator/target/json-web-key-generator-0.9-SNAPSHOT-jar-with-dependencies.jar --type oct --size 2048 --algorithm HS256 --idGenerator sha1 --keySet --output ${CI_PROJECT_DIR}/common/secrets/slurm.jwks
+    - ${CI_PROJECT_DIR}/common/scripts/jwt-key-generation.sh ${CI_PROJECT_DIR}/common/secrets
   artifacts:
     when: on_success
     access: all

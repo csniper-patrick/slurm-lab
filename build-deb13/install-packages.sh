@@ -14,7 +14,7 @@ apt-get -y install nodejs npm
 apt-get -y install nginx
 
 # 4. Install extra utility packages
-apt-get -y install tmux sudo vim man ansible nmap wget iproute2 less curl
+apt-get -y install tmux sudo vim man ansible nmap wget iproute2 less curl acl jq
 
 # 5. Perform system upgrade and cleanup
 apt-get -y upgrade
