@@ -42,7 +42,11 @@ generate_config () {
 
     # Ensure correct file permissions and ownership for Slurm
     chown -R slurm:slurm /etc/slurm /var/spool/slurmctld
-    chmod 0600 /etc/slurm/slurmdbd.conf /etc/slurm/slurm.jwks
+    [[ -f /etc/slurm/slurmdbd.conf ]] && chmod 0600 /etc/slurm/slurmdbd.conf
+    [[ -f /etc/slurm/slurm.jwks ]] && chmod 0600 /etc/slurm/slurm.jwks
+    # Grant read access on jwks.json to tutorial accounts (group lyoko) via POSIX ACL for Jupyter REST API exercises
+    [[ -f /etc/slurm/jwks.json ]] && chmod 0600 /etc/slurm/jwks.json && setfacl -m g:lyoko:r /etc/slurm/jwks.json
+    [[ -f /etc/slurm/jwks.pub.json ]] && chmod 0644 /etc/slurm/jwks.pub.json
     
     # Configure JupyterHub spawner if specified
     mkdir -pv /etc/sysconfig/

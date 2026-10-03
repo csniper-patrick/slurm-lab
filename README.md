@@ -97,14 +97,17 @@ You can build custom container images from source code. This workflow is useful 
    git submodule update --init --recursive
    ```
 
-2. Generate the cryptographic keys for the build:
+2. Generate the cryptographic keys for the build (optional if building with `make`, which auto-generates missing keys):
    ```bash
+   # If step, jq, and openssl are installed locally:
+   ./common/scripts/jwt-key-generation.sh common/secrets
+
+   # Or using Podman:
    mkdir -pv common/secrets
-   podman run --rm -it \
-       -v ./modules/json-web-key-generator:/json-web-key-generator \
-       -v ./common/secrets:/opt \
-       -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
-       docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
+   podman run --rm \
+       -v ./common/secrets:/opt:Z \
+       -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh:Z \
+       quay.io/rockylinux/rockylinux:10 /jwt-key-generation.sh /opt
    ```
 
 3. Build the container images and start the cluster:

@@ -29,7 +29,6 @@ Core third-party dependencies are tracked as Git submodules in the `modules/` di
 * `modules/slurm`: Upstream Slurm source code.
 * `modules/ompi`: Open MPI source code.
 * `modules/slop`: Terminal load and cluster monitoring utility.
-* `modules/json-web-key-generator`: Utility for generating JWT key pairs.
 
 Base image build definitions reside in:
 * `build-deb12/`, `build-deb13/`: Debian Bookworm and Trixie container build contexts.

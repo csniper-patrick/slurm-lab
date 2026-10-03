@@ -15,7 +15,7 @@ dnf -y module install nodejs:20
 dnf -y module install nginx:1.24
 
 # 4. Install extra utility packages
-dnf -y install tmux sudo vim man ansible iproute nmap wget 
+dnf -y install tmux sudo vim man ansible iproute nmap wget acl jq
 
 # 5. Perform system cleanup
 # dnf -y update

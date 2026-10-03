@@ -57,6 +57,9 @@ DISTROS := $(sort $(patsubst build-%/Containerfile,%,$(shell ls build-*/Containe
 
 # JWT key files that need to be generated.
 SECRET_FILES = common/secrets/jwks.json common/secrets/jwks.pub.json common/secrets/slurm.jwks
+STEP_CLI ?= $(shell command -v step 2>/dev/null)
+JQ ?= $(shell command -v jq 2>/dev/null)
+OPENSSL ?= $(shell command -v openssl 2>/dev/null)
 
 .PHONY: all build clean prune $(DISTROS) up dev ci down
 .DEFAULT_GOAL := all
@@ -77,11 +80,14 @@ $(DISTROS): $(SECRET_FILES)
 # A rule to generate JWT key files if they don't exist.
 $(SECRET_FILES): | common/secrets
 	@echo "Generating JWT keys..."
-	@$(PODMAN) run --rm -it \
-		-v "$(CURDIR)/modules/json-web-key-generator:/json-web-key-generator:Z" \
+ifneq ($(and $(STEP_CLI),$(JQ),$(OPENSSL)),)
+	@./common/scripts/jwt-key-generation.sh "$(CURDIR)/common/secrets"
+else
+	@$(PODMAN) run --rm \
 		-v "$(CURDIR)/common/secrets:/opt:Z" \
 		-v "$(CURDIR)/common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh:Z" \
-		docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
+		quay.io/rockylinux/rockylinux:10 /jwt-key-generation.sh /opt
+endif
 
 # Create the secrets directory if it doesn't exist.
 common/secrets:

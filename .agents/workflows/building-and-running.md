@@ -34,14 +34,17 @@ Build container images locally if you modify Slurm source code, build recipes, o
    ```
 
 2. **Generate required cryptographic keys:**
-   The `Makefile` automatically generates required JWT secrets before builds. If running manually:
+   The `Makefile` automatically generates required JWT secrets before builds. If running manually on a host with `step`, `jq`, and `openssl`:
+   ```sh
+   ./common/scripts/jwt-key-generation.sh common/secrets
+   ```
+   Or using Podman:
    ```sh
    mkdir -pv common/secrets
-   podman run --rm -it \
-       -v ./modules/json-web-key-generator:/json-web-key-generator \
-       -v ./common/secrets:/opt \
-       -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh \
-       docker.io/library/maven:3.8.7-openjdk-18-slim /jwt-key-generation.sh
+   podman run --rm \
+       -v ./common/secrets:/opt:Z \
+       -v ./common/scripts/jwt-key-generation.sh:/jwt-key-generation.sh:Z \
+       quay.io/rockylinux/rockylinux:10 /jwt-key-generation.sh /opt
    ```
 
 3. **Build the container images:**
