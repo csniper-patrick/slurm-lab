@@ -23,14 +23,6 @@ case $(uname -m) in
 		priority=50
 		gpgcheck=1
 		gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
-
-		[amdgraphics]
-		name=AMD Graphics repository
-		baseurl=https://repo.radeon.com/graphics/latest/el/10/main/x86_64/
-		enabled=1
-		priority=50
-		gpgcheck=1
-		gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
 		EOF
 		dnf clean all
 		# Install NVML and ROCm development libraries
