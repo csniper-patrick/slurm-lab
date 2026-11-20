@@ -1,3 +1,6 @@
+x-podman:
+  in_pod: false
+
 x-common-volumes: &common-volumes
   - spool-slurmctld:/var/spool/slurmctld
   - homedir:/home
@@ -9,16 +12,18 @@ x-database-volumes: &database-volumes
 # go to https://hub.docker.com/repository/docker/csniper/slurm-lab/tags to see what version is available 
 x-lab-image: &lab-image
   image: ${IMAGE:-${IMAGE_TAG:-docker.io/csniper/slurm-lab:${TAG:-latest}}}
-  uts: "private"
-  cap_add:
-    - ALL
+  privileged: true
+  cgroup: private
+  stop_signal: SIGRTMIN+3
+  tmpfs:
+    - /run
+    - /run/lock
 
 x-master-container: &master-container
   <<: *lab-image
   networks:
     - default
   volumes: *common-volumes
-  privileged: true
   env_file:
     - ./.env
   healthcheck:
@@ -30,7 +35,6 @@ x-master-container: &master-container
 
 x-compute-container: &compute-container
   <<: *lab-image
-  privileged: true
   env_file:
     - ./.env
   networks:
@@ -48,7 +52,6 @@ x-lyoko-volumes: &lyoko-volumes
 
 x-lyoko-container: &lyoko-container
   <<: *lab-image
-  privileged: true
   env_file:
     - ./.env-lyoko
   networks:
@@ -65,10 +68,9 @@ volumes:
 
 services:
   acct-db:
-    image: mariadb:lts
+    image: docker.io/library/mariadb:lts
     container_name: slurm-lab-db-1
     hostname: slurm-lab-db-1
-    uts: "private"
     volumes: *database-volumes
     env_file:
       - ./.env
