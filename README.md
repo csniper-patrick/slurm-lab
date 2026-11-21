@@ -71,7 +71,7 @@ You can start the cluster with pre-built images from [Docker Hub](https://hub.do
    ```
 
 3. Optional: Select an image tag.
-   The cluster uses the `latest` tag (Rocky Linux 9) by default. You can specify a different image by setting `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
+   The cluster uses the `latest` tag (Rocky Linux 10) by default. You can specify a different image by setting `TAG` in the `.env` file. See the [list of available tags](https://hub.docker.com/r/csniper/slurm-lab/tags).
    If you want to use the Debian image, add this line to `.env`:
    ```sh
    TAG=latest-deb
@@ -269,7 +269,23 @@ When the `lyoko` profile is active:
 
 ## Known Issues
 
+### 1. Environment modules in Debian images
+
 The Debian container image does not support the `module` command inside Jupyter notebooks. If you need environment modules inside notebooks, use the Enterprise Linux images. Work is ongoing to enable environment modules across all supported distributions.
+
+### 2. `x86-64-v3` CPU requirement for the default image
+
+The default `latest` image uses Rocky Linux 10 and requires an `x86-64-v3` CPU (a newer set of 64-bit instructions). On older hardware or virtual machines with a generic CPU, `master-1` and `master-2` stop immediately with exit code `127` after `acct-db` becomes healthy.
+
+Run one of these commands on the container host to test the image:
+```sh
+podman run --rm --entrypoint /bin/bash docker.io/csniper/slurm-lab:latest -c true
+# Or with Docker:
+docker run --rm --entrypoint /bin/bash docker.io/csniper/slurm-lab:latest -c true
+```
+An unsupported CPU prints `Fatal glibc error: CPU does not support x86-64-v3`.
+
+If you see this error, set `TAG=latest-deb13` (Debian 13) or `TAG=latest-el9` (Rocky Linux 9) in `.env`. Before you start the cluster again, run `docker compose down --volumes` or `podman compose down --volumes` on the host. If you run a virtual machine on newer hardware, set it to use the host CPU model.
 
 ## Roadmap
 
