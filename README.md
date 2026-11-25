@@ -8,7 +8,7 @@ The cluster environment includes these capabilities:
 
 * Multi-container Slurm cluster with controllers, a database, a client node, and compute nodes.
 * Slurm REST API (`slurmrestd`) enabled for programmatic cluster access.
-* Multiple Linux distributions for node images, including Rocky Linux 8, Rocky Linux 9, Debian 12, and Debian 13.
+* Multiple Linux distributions for node images, including Rocky Linux 8, Rocky Linux 9, Rocky Linux 10, Debian 12, and Debian 13.
 * Authentication with `auth/munge` by default or `auth/slurm`.
 * Configuration controlled through the `.env` file.
 * Multi-cluster and federation support with the `lyoko` Compose profile.
@@ -135,7 +135,7 @@ You can develop inside the cluster with VS Code Dev Containers. The container wo
 The `Makefile` automates image builds and cluster operations. It runs required prerequisite steps, such as key generation, before starting any build. Build logs for each distribution are saved to `*-img-build.log` in the root directory.
 
 The primary build targets are:
-* `make build` builds container images for all supported distributions (`el8`, `el9`, `deb12`, `deb13`).
+* `make build` builds container images for all supported distributions (`el8`, `el9`, `el10`, `deb12`, `deb13`).
 * `make <distro>` builds a specific image, for example `make el9`.
 * `make ci` starts the cluster in CI mode (`MODE=ci`) to test controller and service initialization.
 * `make clean` removes generated secret keys and build logs.
@@ -198,7 +198,7 @@ podman compose up -d --scale compute=6 --no-recreate
 
 ### Accessing the Slurm REST API
 
-The client container provides the Slurm REST API at `localhost:8080/slurm/v0.0.45`. If you changed the web port, use that port number instead. Read the official documentation for request authentication and endpoint details:
+The client container provides the Slurm REST API at `localhost:8080/slurm/v0.0.46`. If you changed the web port, use that port number instead. Read the official documentation for request authentication and endpoint details:
 * [Slurm REST API Guide](https://slurm.schedmd.com/rest.html)
 * [Slurm REST API Reference](https://slurm.schedmd.com/rest_api.html)
 

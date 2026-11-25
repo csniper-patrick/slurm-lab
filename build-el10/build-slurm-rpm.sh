@@ -53,6 +53,9 @@ export CPPFLAGS="$(pkg-config --cflags-only-I $(pkg-config --list-all | grep -oE
 export LDFLAGS="$(pkg-config --libs-only-L $(pkg-config --list-all | grep -oE 'nvidia-ml-[0-9]+\.[0-9+]') ) ${LDFLAGS}"
 
 # 4. Prepare source tarball and build Slurm RPMs
+# Workaround: EL10 ucx has RPM Epoch 1, but upstream slurm.spec omits RPMTAG_EPOCH in Requires.
+# Remove once upstream slurm.spec handles RPMTAG_EPOCH.
+sed -i 's/"%{RPMTAG_VERSION}"/"%|RPMTAG_EPOCH?{%{RPMTAG_EPOCH}:}:{}|%{RPMTAG_VERSION}"/g' /usr/local/src/slurm/slurm.spec
 # Get version and release from the spec file
 ver=$(rpmspec -q --qf '%{version}\n' /usr/local/src/slurm/slurm.spec | head -n 1)
 rel=$(rpmspec -q --qf '%{release}\n' /usr/local/src/slurm/slurm.spec | head -n 1 | cut -d. -f1)
